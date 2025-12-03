@@ -1,0 +1,33 @@
+/* Optional: Customize the switch size */
+.custom-switch .form-check-input {
+  width: 40px; /* Adjust width */
+  height: 20px; /* Adjust height */
+  background-color: #d6d6d6;
+  border-radius: 20px;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.custom-switch .form-check-input:checked {
+  background-color: #28a745; /* Green when checked */
+}
+
+.custom-switch .form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25); /* Optional focus style */
+}
+
+.custom-switch .form-check-input::before {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  border-radius: 50%;
+  position: relative;
+  left: 2px;
+  top: 1px;
+  transition: transform 0.3s;
+}
+
+.custom-switch .form-check-input:checked::before {
+  transform: translateX(20px); /* Move the circle */
+}

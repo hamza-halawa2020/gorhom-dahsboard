@@ -1,0 +1,323 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Certificates"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="certificates">
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <div class="certificate-content w-100 pb-0">
+      <div class="col">
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        <button
+          class="btn btn-success w-100"
+          (click)="createCertificateModal.show()"
+        >
+          <i class="ri-add-line align-bottom"></i> Add New Certificate
+        </button>
+      </div>
+
+      <div
+        class="certificate-content position-relative px-4 mx-n4"
+        id="certificate-content"
+      >
+        <div class="certificate-certificate" id="certificate-certificate">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Serial Number</th>
+                  <th scope="col">File</th>
+                  <th scope="col">User</th>
+                  <th scope="col">Created At</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="certificate-list">
+                <tr *ngFor="let data of certificates; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.serial_number || "No Certificate" }}</td>
+                  <td>
+                    <img
+                      src="{{ image + data.file }}"
+                      alt="{{ data.file }}"
+                      height="25px"
+                    />
+                  </td>
+                  <td>{{ data.user || "No User" }}</td>
+                  <td>{{ data.created_at | date }}</td>
+                  <td>
+                    <div class="hstack gap-2">
+                      <button
+                        class="btn btn-sm btn-subtle-danger remove-list"
+                        (click)="removeCertificateItemModal.show()"
+                      >
+                        <i class="ri-delete-bin-5-fill align-bottom"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-subtle-info edit-list"
+                        (click)="
+                          openEditCertificateModal(data);
+                          updateCertificate.show()
+                        "
+                      >
+                        <i class="ri-pencil-fill align-bottom"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <div
+                    bsModal
+                    #removeCertificateItemModal="bs-modal"
+                    id="removeCertificateItemModal"
+                    class="modal fade zoomIn"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="removeCertificateItemModal.hide()"
+                            id="close-removecertificatemodal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mt-2 text-center">
+                            <i class="ti ti-trash fs-1 text-danger"></i>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                              <h5>Are you sure?</h5>
+                              <p class="text-muted mx-4 mb-0">
+                                Are you sure you want to remove this
+                                certificate?
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
+                          >
+                            <button
+                              type="button"
+                              class="btn w-sm btn-light"
+                              (click)="removeCertificateItemModal.hide()"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn w-sm btn-danger"
+                              id="remove-certificateitem"
+                              (click)="deleteCertificate(data.id)"
+                            >
+                              Yes, Delete It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    bsModal
+                    #updateCertificate="bs-modal"
+                    class="modal fade"
+                    id="updateCertificate"
+                    tabindex="-1"
+                    aria-labelledby="updateCertificateLabel"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content border-0">
+                        <div class="modal-header p-3 bg-success-subtle">
+                          <h5 class="modal-title" id="updateCertificateLabel">
+                            Update Certificate Info
+                          </h5>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="updateCertificate.hide()"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mb-4">
+                            <label for="serial-number-input" class="form-label"
+                              >Serial Number</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="serial-number-input"
+                              autocomplete="off"
+                              placeholder="Enter Certificate serial number"
+                              [(ngModel)]="editCertificateData.serial_number"
+                            />
+                          </div>
+                          <div class="mb-4">
+                            <label for="file-input" class="form-label"
+                              >File</label
+                            >
+                            <input
+                              type="file"
+                              class="form-control"
+                              id="file-input"
+                              accept="image/*"
+                              (change)="onFileSelected($event)"
+                            />
+                          </div>
+                          <div class="mb-4">
+                            <label for="user-select" class="form-label"
+                              >Select User</label
+                            >
+                            <select
+                              id="user-select"
+                              class="form-control"
+                              [(ngModel)]="editCertificateData.user_id"
+                            >
+                              <option
+                                *ngFor="let user of users"
+                                [value]="user.id"
+                              >
+                                {{ user.name || "No Name" }}
+                              </option>
+                            </select>
+                          </div>
+                          <div class="hstack gap-2 justify-content-end">
+                            <button
+                              type="button"
+                              class="btn btn-ghost-success"
+                              (click)="updateCertificate.hide()"
+                            >
+                              <i class="ri-close-fill align-bottom"></i> Close
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              id="addNewCertificate"
+                              (click)="
+                                editCertificate(data.id);
+                                updateCertificate.hide()
+                              "
+                            >
+                              Update Certificate
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    bsModal
+    #createCertificateModal="bs-modal"
+    class="modal fade zoomIn"
+    id="createCertificateModal"
+    tabindex="-1"
+    aria-labelledby="createCertificateModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header p-3 bg-success-subtle">
+          <h5 class="modal-title" id="createCertificateModalLabel">
+            Create Certificate
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="createCertificateModal.hide()"
+            id="addCertificateBtn-close"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="mb-4">
+              <label for="serial-number-input" class="form-label"
+                >Serial Number</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="serial-number-input"
+                autocomplete="off"
+                placeholder="Enter Certificate serial number"
+                [(ngModel)]="newCertificate.serial_number"
+              />
+            </div>
+            <div class="mb-4">
+              <label for="file-input" class="form-label">File</label>
+              <input
+                type="file"
+                class="form-control"
+                id="file-input"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+              />
+            </div>
+            <div class="mb-4">
+              <label for="user-select" class="form-label">Select User</label>
+              <select
+                id="user-select"
+                class="form-control"
+                [(ngModel)]="newCertificate.user_id"
+              >
+                <option *ngFor="let user of users" [value]="user.id">
+                  {{ user.name || "No Name" }}
+                </option>
+              </select>
+            </div>
+            <div class="hstack gap-2 justify-content-end">
+              <button
+                type="button"
+                class="btn btn-ghost-success"
+                (click)="createCertificateModal.hide()"
+              >
+                <i class="ri-close-line align-bottom"></i> Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="addCertificate(); createCertificateModal.hide()"
+              >
+                Add Certificate
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

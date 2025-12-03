@@ -1,0 +1,470 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Coupons"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="coupons">
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <!--end side content-->
+    <div class="coupon-content w-100 pb-0">
+      <div class="col">
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
+        <button
+          class="btn btn-success w-100"
+          (click)="createCouponModal.show()"
+        >
+          <i class="ri-add-line align-bottom"></i> Add New Coupon
+        </button>
+      </div>
+
+      <div
+        class="coupon-content position-relative px-4 mx-n4"
+        id="coupon-content"
+      >
+        <div class="coupon-coupon" id="coupon-coupon">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">code</th>
+                  <th scope="col">name</th>
+                  <th scope="col">description</th>
+                  <th scope="col">discount</th>
+                  <th scope="col">max uses</th>
+                  <th scope="col">uses count</th>
+                  <th scope="col">start date</th>
+                  <th scope="col">end date</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">createdBy</th>
+                  <th scope="col">CreatedAt</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="coupon-list">
+                <tr *ngFor="let data of coupons; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.code || "No code" }}</td>
+                  <td>{{ data.name || "No name" }}</td>
+                  <td>{{ data.description || "No description" }}</td>
+                  <td>
+                    <span *ngIf="data.discount">
+                      {{ data.discount | number:'1.0-0' }}%
+                    </span>
+                    <span *ngIf="!data.discount">No discount</span>
+                  </td>
+                  <td>{{ data.max_uses || "No max uses" }}</td>
+                  <td>{{ data.uses_count || "No uses count" }}</td>
+                  <td>{{ data.start_date | date }}</td>
+                  <td>{{ data.end_date | date }}</td>
+                  <td>
+                    <ui-switch
+                      [checked]="data.is_active ? true : false"
+                      (change)="toggleStatus(data)"
+                      uncheckedLabel="InActive"
+                      checkedLabel="Active"
+                      size="small"
+                      class="me-2"
+                    >
+                    </ui-switch>
+
+                    <div class="form-check form-switch custom-switch me-2">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="customSwitch"
+                        [checked]="data.is_active ? true : false"
+                        (change)="toggleStatus(data)"
+                      />
+                    </div>
+                  </td>
+
+                  <td>{{ data.admin || "No admin" }}</td>
+                  <td>{{ data.created_at | date }}</td>
+                  <td>
+                    <div class="hstack gap-2">
+                      <button
+                        class="btn btn-sm btn-subtle-danger remove-list"
+                        (click)="removeCouponItemModal.show()"
+                      >
+                        <i class="ri-delete-bin-5-fill align-bottom"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-subtle-info edit-list"
+                        (click)="openEditCouponModal(data); updateCoupon.show()"
+                      >
+                        <i class="ri-pencil-fill align-bottom"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- removeFileItemModal -->
+                  <div
+                    bsModal
+                    #removeCouponItemModal="bs-modal"
+                    id="removeCouponItemModal"
+                    class="modal fade zoomIn"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="removeCouponItemModal.hide()"
+                            id="close-removecouponmodal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mt-2 text-center">
+                            <i class="ti ti-trash fs-1 text-danger"></i>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                              <h5>Are you sure ?</h5>
+                              <p class="text-muted mx-4 mb-0">
+                                Are you sure you want to remove this coupon ?
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
+                          >
+                            <button
+                              type="button"
+                              class="btn w-sm btn-light"
+                              (click)="removeCouponItemModal.hide()"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn w-sm btn-danger"
+                              id="remove-couponitem"
+                              (click)="deleteCoupon(data.id)"
+                            >
+                              Yes, Delete It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal-dialog -->
+                  </div>
+
+                  <!-- update Modal -->
+                  <div
+                  bsModal
+                  #updateCoupon="bs-modal"
+                  class="modal fade"
+                  id="updateCoupon"
+                  tabindex="-1"
+                  aria-labelledby="updateCouponLabel"
+                  aria-hidden="true"
+                >
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0">
+                      <div class="modal-header p-3 bg-success-subtle">
+                        <h5 class="modal-title" id="updateCouponLabel">
+                          Update Coupon Info
+                        </h5>
+                        <button
+                          type="button"
+                          class="btn-close"
+                          (click)="updateCoupon.hide()"
+                        ></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="row mb-4">
+                          <div class="col">
+                            <label for="Couponname-input" class="form-label">Name</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="Couponname-input"
+                              autocomplete="off"
+                              placeholder="Enter Coupon name"
+                              [(ngModel)]="editCouponData.name"
+                            />
+                          </div>
+                        </div>
+                        <div class="mb-4">
+                          <label for="Couponname-input" class="form-label">Description</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="Couponname-input"
+                            autocomplete="off"
+                            placeholder="Enter Coupon description"
+                            [(ngModel)]="editCouponData.description"
+                          />
+                        </div>
+                        <div class="row mb-4">
+                          <div class="col">
+                            <label for="Couponname-input" class="form-label">Discount</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="Couponname-input"
+                              autocomplete="off"
+                              placeholder="Enter Coupon discount"
+                              [(ngModel)]="editCouponData.discount"
+                            />
+                          </div>
+                          <div class="col">
+                            <label for="Couponname-input" class="form-label">Max Uses</label>
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="Couponname-input"
+                              autocomplete="off"
+                              placeholder="Enter Coupon max_uses"
+                              [(ngModel)]="editCouponData.max_uses"
+                            />
+                          </div>
+                        </div>
+                        <div class="row mb-4">
+                          <div class="col">
+                            <label for="Couponname-input" class="form-label">Start Date</label>
+                            <input
+                              type="date"
+                              class="form-control"
+                              id="Couponname-input"
+                              autocomplete="off"
+                              placeholder="Enter Coupon start_date"
+                              [(ngModel)]="editCouponData.start_date"
+                            />
+                          </div>
+                          <div class="col">
+                            <label for="Couponname-input" class="form-label">End Date</label>
+                            <input
+                              type="date"
+                              class="form-control"
+                              id="Couponname-input"
+                              autocomplete="off"
+                              placeholder="Enter Coupon end_date"
+                              [(ngModel)]="editCouponData.end_date"
+                            />
+                          </div>
+                        </div>
+                        <div class="hstack gap-2 justify-content-end">
+                          <button
+                            type="button"
+                            class="btn btn-ghost-success"
+                            (click)="updateCoupon.hide()"
+                          >
+                            <i class="ri-close-fill align-bottom"></i> Close
+                          </button>
+                          <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="addNewCoupon"
+                            (click)="editCoupon(data.id); updateCoupon.hide()"
+                          >
+                            Update Coupon
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                  <!--end update coupon-->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Create Coupon Modal -->
+  <div
+    bsModal
+    #createCouponModal="bs-modal"
+    class="modal fade zoomIn"
+    id="createCouponModal"
+    tabindex="-1"
+    aria-labelledby="createCouponModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header p-3 bg-success-subtle">
+          <h5 class="modal-title" id="createCouponModalLabel">Create Coupon</h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="createCouponModal.hide()"
+            id="addCouponBtn-close"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="row mb-4">
+              <div class="col">
+                <label for="code" class="form-label">Code</label>
+                <input
+                  [(ngModel)]="addNewCoupon.code"
+                  type="text"
+                  class="form-control"
+                  id="code"
+                  placeholder="Enter Coupon code"
+                />
+              </div>
+              <div class="col">
+                <label for="Couponname-input" class="form-label">Name</label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="Couponname-input"
+                  autocomplete="off"
+                  placeholder="Enter Coupon name"
+                  [(ngModel)]="addNewCoupon.name"
+                />
+              </div>
+            </div>
+            <div class="mb-4">
+              <label for="Couponname-input" class="form-label"
+                >Description</label
+              >
+
+              <input
+                type="text"
+                class="form-control"
+                id="Couponname-input"
+                autocomplete="off"
+                placeholder="Enter Coupon Description"
+                [(ngModel)]="addNewCoupon.description"
+              />
+            </div>
+            <div class="row mb-4">
+              <div class="col">
+                <label for="Couponname-input" class="form-label"
+                  >discount</label
+                >
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="Couponname-input"
+                  autocomplete="off"
+                  placeholder="Enter Coupon discount"
+                  [(ngModel)]="addNewCoupon.discount"
+                />
+              </div>
+              <div class="col">
+                <label for="Couponname-input" class="form-label"
+                  >max uses</label
+                >
+
+                <input
+                  type="text"
+                  class="form-control"
+                  id="Couponname-input"
+                  autocomplete="off"
+                  placeholder="Enter Coupon max uses"
+                  [(ngModel)]="addNewCoupon.max_uses"
+                />
+              </div>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col">
+                <label for="Couponname-input" class="form-label"
+                  >start date</label
+                >
+
+                <input
+                  type="date"
+                  class="form-control"
+                  id="Couponname-input"
+                  autocomplete="off"
+                  placeholder="Enter Coupon start date"
+                  [(ngModel)]="addNewCoupon.start_date"
+                />
+              </div>
+              <div class="col">
+                <label for="Couponname-input" class="form-label"
+                  >end date</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="Couponname-input"
+                  autocomplete="off"
+                  placeholder="Enter Coupon end date"
+                  [(ngModel)]="addNewCoupon.end_date"
+                />
+              </div>
+            </div>
+            <div class="mb-4">
+              <div class="form-check form-switch custom-switch me-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="customSwitch"
+                  [checked]="addNewCoupon.is_active ? true : false"
+                  [(ngModel)]="addNewCoupon.is_active"
+                />
+              </div>
+            </div>
+
+            <div class="hstack gap-2 justify-content-end">
+              <button
+                type="button"
+                class="btn btn-ghost-success"
+                (click)="createCouponModal.hide()"
+              >
+                <i class="ri-close-line align-bottom"></i> Close
+              </button>
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="addNewCategory"
+                (click)="addCoupon()"
+                (click)="createCouponModal.hide()"
+              >
+                Add Coupon
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end modal-dialog -->
+  </div>
+  <!-- End Create Coupon Modal -->
+
+  <!-- /.modal -->
+</div>

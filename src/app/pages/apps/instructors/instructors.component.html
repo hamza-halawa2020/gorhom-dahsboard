@@ -1,0 +1,397 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Instructors"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="instructors">
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <div class="instructor-content w-100 pb-0">
+      <div class="col">
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        <button
+          class="btn btn-success w-100"
+          (click)="createInstructorModal.show()"
+        >
+          <i class="ri-add-line align-bottom"></i> Add New Instructor
+        </button>
+      </div>
+
+      <div
+        class="instructor-content position-relative px-4 mx-n4"
+        id="instructor-content"
+      >
+        <div class="instructor-instructor" id="instructor-instructor">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">Image</th>
+                  <th scope="col">Job Title</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Created By</th>
+                  <th scope="col">Created At</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="instructor-list">
+                <tr *ngFor="let data of instructors; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.name || "No Name" }}</td>
+                  <td>{{ data.email || "No Email" }}</td>
+                  <td>{{ data.phone || "No Phone" }}</td>
+                  <td>
+                    <img
+                      src="{{ image + data.image }}"
+                      alt="{{ data.image }}"
+                      height="25px"
+                    />
+                  </td>
+                  <td>{{ data.job_title || "No Job Title" }}</td>
+                  <td>{{ data.description || "No Description" }}</td>
+                  <td>{{ data.admin || "No Admin" }}</td>
+                  <td>{{ data.created_at | date }}</td>
+                  <td>
+                    <div class="hstack gap-2">
+                      <button
+                        class="btn btn-sm btn-subtle-danger remove-list"
+                        (click)="removeInstructorItemModal.show()"
+                      >
+                        <i class="ri-delete-bin-5-fill align-bottom"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-subtle-info edit-list"
+                        (click)="
+                          openEditInstructorModal(data); updateInstructor.show()
+                        "
+                      >
+                        <i class="ri-pencil-fill align-bottom"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <div
+                    bsModal
+                    #removeInstructorItemModal="bs-modal"
+                    id="removeInstructorItemModal"
+                    class="modal fade zoomIn"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="removeInstructorItemModal.hide()"
+                            id="close-removeinstructormodal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mt-2 text-center">
+                            <i class="ti ti-trash fs-1 text-danger"></i>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                              <h5>Are you sure?</h5>
+                              <p class="text-muted mx-4 mb-0">
+                                Are you sure you want to remove this instructor?
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
+                          >
+                            <button
+                              type="button"
+                              class="btn w-sm btn-light"
+                              (click)="removeInstructorItemModal.hide()"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn w-sm btn-danger"
+                              id="remove-instructoritem"
+                              (click)="deleteInstructor(data.id)"
+                            >
+                              Yes, Delete It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    bsModal
+                    #updateInstructor="bs-modal"
+                    class="modal fade"
+                    id="updateInstructor"
+                    tabindex="-1"
+                    aria-labelledby="updateInstructorLabel"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content border-0">
+                        <div class="modal-header p-3 bg-success-subtle">
+                          <h5 class="modal-title" id="updateInstructorLabel">
+                            Update Instructor Info
+                          </h5>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="updateInstructor.hide()"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="row">
+                            <div class="col">
+                              <label for="name-input" class="form-label"
+                                >Name</label
+                              >
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="name-input"
+                                autocomplete="off"
+                                placeholder="Enter Instructor name"
+                                [(ngModel)]="editInstructorData.name"
+                              />
+                            </div>
+                          </div>
+                          <div class="col">
+                            <label for="email-input" class="form-label"
+                              >Email</label
+                            >
+                            <input
+                              type="email"
+                              class="form-control"
+                              id="email-input"
+                              autocomplete="off"
+                              placeholder="Enter Instructor email"
+                              [(ngModel)]="editInstructorData.email"
+                            />
+                          </div>
+                          <div class="col">
+                            <label for="phone-input" class="form-label"
+                              >Phone</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="phone-input"
+                              autocomplete="off"
+                              placeholder="Enter Instructor phone"
+                              [(ngModel)]="editInstructorData.phone"
+                            />
+                          </div>
+                          <div class="col">
+                            <label for="job-title-input" class="form-label"
+                              >Job Title</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="job-title-input"
+                              autocomplete="off"
+                              placeholder="Enter Instructor job title"
+                              [(ngModel)]="editInstructorData.job_title"
+                            />
+                          </div>
+                          <div class="col">
+                            <label for="description-input" class="form-label"
+                              >Description</label
+                            >
+                            <textarea
+                              class="form-control"
+                              id="description-input"
+                              autocomplete="off"
+                              placeholder="Enter Instructor description"
+                              [(ngModel)]="editInstructorData.description"
+                            ></textarea>
+                          </div>
+                          <div class="col">
+                            <label for="image-input" class="form-label"
+                              >Image</label
+                            >
+                            <input
+                              type="file"
+                              class="form-control"
+                              id="image-input"
+                              accept="image/*"
+                              (change)="onFileSelected($event)"
+                            />
+                          </div>
+                          <div class="hstack gap-2 justify-content-end">
+                            <button
+                              type="button"
+                              class="btn btn-ghost-success"
+                              (click)="updateInstructor.hide()"
+                            >
+                              <i class="ri-close-fill align-bottom"></i> Close
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              id="updateInstructorBtn"
+                              (click)="
+                                editInstructor(data.id); updateInstructor.hide()
+                              "
+                            >
+                              Update Instructor
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    bsModal
+    #createInstructorModal="bs-modal"
+    class="modal fade zoomIn"
+    id="createInstructorModal"
+    tabindex="-1"
+    aria-labelledby="createInstructorModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header p-3 bg-success-subtle">
+          <h5 class="modal-title" id="createInstructorModalLabel">
+            Create Instructor
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="createInstructorModal.hide()"
+            id="addInstructorBtn-close"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="row col">
+              <div class="col">
+                <label for="name-input" class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name-input"
+                  autocomplete="off"
+                  placeholder="Enter Instructor name"
+                  [(ngModel)]="addNewInstructor.name"
+                />
+              </div>
+            </div>
+            <div class="col">
+              <label for="email-input" class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email-input"
+                autocomplete="off"
+                placeholder="Enter Instructor email"
+                [(ngModel)]="addNewInstructor.email"
+              />
+            </div>
+            <div class="col">
+              <label for="phone-input" class="form-label">Phone</label>
+              <input
+                type="text"
+                class="form-control"
+                id="phone-input"
+                autocomplete="off"
+                placeholder="Enter Instructor phone"
+                [(ngModel)]="addNewInstructor.phone"
+              />
+            </div>
+            <div class="col">
+              <label for="job-title-input" class="form-label">Job Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="job-title-input"
+                autocomplete="off"
+                placeholder="Enter Instructor job title"
+                [(ngModel)]="addNewInstructor.job_title"
+              />
+            </div>
+            <div class="col">
+              <label for="description-input" class="form-label"
+                >Description</label
+              >
+              <textarea
+                class="form-control"
+                id="description-input"
+                autocomplete="off"
+                placeholder="Enter Instructor description"
+                [(ngModel)]="addNewInstructor.description"
+              ></textarea>
+            </div>
+            <div class="col">
+              <label for="image-input" class="form-label">Image</label>
+              <input
+                type="file"
+                class="form-control"
+                id="image-input"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+              />
+            </div>
+            <div class="hstack gap-2 justify-content-end">
+              <button
+                type="button"
+                class="btn btn-ghost-success"
+                (click)="createInstructorModal.hide()"
+              >
+                <i class="ri-close-line align-bottom"></i> Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="addInstructor(); createInstructorModal.hide()"
+              >
+                Add Instructor
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

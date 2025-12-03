@@ -1,0 +1,246 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Profile Settings"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+<div *ngIf="userInfo">
+  <div class="card">
+    <div class="profile-foreground position-relative">
+      <div class="profile-wid-bg position-static">
+        <img
+          src="assets/images/bg.jpg"
+          alt=""
+          width="50%"
+          class="profile-wid-img card-img-top"
+        />
+      </div>
+    </div>
+
+    <div class="card-body mt-n5">
+      <div class="position-relative mt-n3">
+        <div class="avatar-lg position-relative">
+          <img
+            src="{{ image + userInfo.image }}"
+            alt="{{ userInfo.image }}"
+            class="img-thumbnail rounded-circle user-profile-image"
+            style="z-index: 1"
+          />
+          <div
+            class="avatar-xs p-0 rounded-circle profile-photo-edit position-absolute end-0 bottom-0"
+          >
+            <input
+              id="profile-img-file-input"
+              type="file"
+              class="profile-img-file-input d-none"
+              (change)="fileChange($event, '1')"
+            />
+            <label
+              for="profile-img-file-input"
+              class="profile-photo-edit avatar-xs"
+            >
+              <span class="avatar-title rounded-circle bg-light text-body">
+                <i class="btn bi bi-camera"></i>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="mt-3">
+          <h3 class="fs-xl mb-1">{{ userInfo.name }}</h3>
+          <p class="fs-md text-muted mb-0">
+            {{ userInfo.type || "Admin" }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <div class="col"></div>
+
+    <div class="col">
+      <tabset
+        class="nav nav-pills nav-custom-outline nav-info gap-2 profile-nav"
+        role="tablist"
+      >
+        <tab class="nav-item">
+          <ng-template tabHeading>
+            <i class="ri-airplay-fill d-inline-block d-md-none"></i>
+            <span class="d-none d-md-inline-block">Personal Details</span>
+          </ng-template>
+          <ng-template [ngTemplateOutlet]="PersonalContent"> </ng-template>
+        </tab>
+        <tab class="nav-item">
+          <ng-template tabHeading>
+            <i class="ri-list-unordered d-inline-block d-md-none"></i>
+            <span class="d-none d-md-inline-block">Changes Password</span>
+          </ng-template>
+          <ng-template [ngTemplateOutlet]="ChangepwdContent"> </ng-template>
+        </tab>
+      </tabset>
+    </div>
+    <div class="col"></div>
+
+    <div class="tab-content">
+      <ng-template #PersonalContent>
+        <div class="card">
+          <div class="card-header">
+            <h6 class="card-title mb-0">Personal Details</h6>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="updateInfo" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-lg-12">
+                  <div class="mb-3">
+                    <label for="nameInput" class="form-label">Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="nameInput"
+                      formControlName="name"
+                      placeholder="Enter your Name"
+                      value="{{ userInfo.name }}"
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="mb-3">
+                    <label for="phonenumberInput" class="form-label fs-md"
+                      >Phone Number</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control fs-md"
+                      id="phonenumberInput"
+                      placeholder="Enter your phone number"
+                      formControlName="phone"
+                      value="{{ userInfo.phone }}"
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="mb-3">
+                    <label for="emailInput" class="form-label fs-md"
+                      >Email Address</label
+                    >
+                    <input
+                      type="email"
+                      class="form-control fs-md"
+                      id="emailInput"
+                      placeholder="Enter your email"
+                      formControlName="email"
+                      value="{{ userInfo.email }}"
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="hstack gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                      Update
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </ng-template>
+      <ng-template #ChangepwdContent>
+        <div class="card">
+          <div class="card-header">
+            <h6 class="card-title mb-0">Changes Password</h6>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="updateInfo" (ngSubmit)="onSubmit()">
+              <div
+                class="row g-2 justify-content-lg-between align-items-center"
+              >
+                <div class="col-12">
+                  <div class="auth-pass-inputgroup">
+                    <label for="password-input" class="form-label fs-md"
+                      >New Password*</label
+                    >
+                    <div class="position-relative">
+                      <input
+                        [type]="fieldTextType1 ? 'text' : 'password'"
+                        class="form-control password-input fs-md"
+                        id="password-input"
+                        onpaste="return false"
+                        placeholder="Enter new password"
+                        formControlName="password"
+                        aria-describedby="passwordInput"
+                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                        required
+                      />
+                      <button
+                        class="btn btn-link shadow-none position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
+                        type="button"
+                      >
+                        <i
+                          class="ri-eye-fill align-middle"
+                          [ngClass]="{
+                            'mdi-eye-off-outline': !fieldTextType1,
+                            'mdi-eye-outline': fieldTextType1
+                          }"
+                          (click)="toggleFieldTextType1()"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="auth-pass-inputgroup">
+                    <label for="confirm-password-input" class="form-label fs-md"
+                      >Confirm Password*</label
+                    >
+                    <div class="position-relative">
+                      <input
+                        [type]="fieldTextType2 ? 'text' : 'password'"
+                        class="form-control password-input fs-md"
+                        onpaste="return false"
+                        formControlName="password_confirmation"
+                        id="confirm-password-input"
+                        placeholder="Confirm password"
+                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                        required
+                      />
+                      <button
+                        class="btn btn-link shadow-none position-absolute end-0 top-0 text-decoration-none text-muted password-addon"
+                        type="button"
+                      >
+                        <i
+                          class="ri-eye-fill align-middle"
+                          [ngClass]="{
+                            'mdi-eye-off-outline': !fieldTextType2,
+                            'mdi-eye-outline': fieldTextType2
+                          }"
+                          (click)="toggleFieldTextType2()"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="">
+                    <button type="submit" class="btn btn-info">
+                      Change Password
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

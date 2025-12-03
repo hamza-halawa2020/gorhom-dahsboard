@@ -1,0 +1,192 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Orders"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="orders">
+  <div class="col">
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <button class="btn btn-success w-100" (click)="exportPendingOrders()">
+      <i class="ri-add-line align-bottom"></i> Export Pending Orders To Excel
+    </button>
+  </div>
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <div class="order-content w-100 pb-0">
+      <div
+        class="order-content position-relative px-4 mx-n4"
+        id="order-content"
+      >
+        <div class="order-order" id="order-order">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Order Number</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">User Data</th>
+                  <th scope="col">Client Data</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">Order Items</th>
+                  <th scope="col">Coupon</th>
+                  <th scope="col">Shipment</th>
+                  <th scope="col">Total Price</th>
+                  <th scope="col">Notes</th>
+                  <th scope="col">Payment Method</th>
+                  <th scope="col">Changed By</th>
+                  <th scope="col">Created At</th>
+                </tr>
+              </thead>
+
+              <tbody id="order-list">
+                <tr *ngFor="let data of orders; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.order_number || "No order_number" }}</td>
+
+                  <!-- Change Status Form -->
+                  <td>
+                    {{ data.status || "No status" }}
+                    <form
+                      #statusForm="ngForm"
+                      (ngSubmit)="
+                        changeStatus(data.id, statusForm.value.status)
+                      "
+                    >
+                      <div class="input-group">
+                        <select
+                          class="form-select"
+                          name="status"
+                          [(ngModel)]="data.status"
+                          required
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Canceled">Canceled</option>
+                          <option value="Returned">Returned</option>
+                          <option value="Awaiting Payment">
+                            Awaiting Payment
+                          </option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                        <button
+                          type="submit"
+                          class="btn btn-primary"
+                          [disabled]="statusForm.invalid"
+                        >
+                          <i class="ri-check-line"></i>
+                        </button>
+                      </div>
+                    </form>
+                  </td>
+
+                  <!-- user data -->
+                  <td>
+                    <div *ngIf="data.user">
+                      <strong>User Name:</strong>
+                      {{ data.user?.name || "N/A" }}<br />
+                      <strong>User Email:</strong>
+                      {{ data.user?.email || "N/A" }}<br />
+                      <strong>User Phone:</strong>
+                      {{ data.user?.phone || "N/A" }}<br />
+                    </div>
+                    <div *ngIf="!data.user">No user data</div>
+                  </td>
+
+                  <!-- client data -->
+                  <td>
+                    <div *ngIf="data.client">
+                      <strong>Client Name:</strong>
+                      {{ data.client?.name || "N/A" }}<br />
+                      <strong>Client Email:</strong>
+                      {{ data.client?.email || "N/A" }}<br />
+                      <strong>Client Phone:</strong>
+                      {{ data.client?.phone || "N/A" }}<br />
+                    </div>
+                    <div *ngIf="!data.client">No client data</div>
+                  </td>
+
+                  <!-- user data -->
+                  <td>
+                    <div *ngIf="data.address">
+                      <strong>Country:</strong>
+                      {{ data.address.country || "N/A" }}<br />
+                      <strong>City:</strong> {{ data.address.city || "N/A"
+                      }}<br />
+                      <strong>Address:</strong>
+                      {{ data.address.address || "N/A" }}<br />
+                    </div>
+                    <div *ngIf="!data.address">No address data</div>
+                  </td>
+
+                  <!-- Order Items -->
+                  <td>
+                    <div *ngIf="data.orderItems && data.orderItems.length > 0">
+                      <div *ngFor="let item of data.orderItems">
+                        <strong>Product Name:</strong>
+                        {{ item.product?.title || "N/A" }}<br />
+                        <strong>Product Price:</strong>
+                        {{ item.product?.priceAfterDiscount || "N/A" }}<br />
+                        <strong>Quantity:</strong> {{ item.quantity || "N/A"
+                        }}<br />
+                        <strong>Total:</strong>
+                        {{ item.total || "N/A" }}
+                      </div>
+                    </div>
+                    <div
+                      *ngIf="!data.orderItems || data.orderItems.length === 0"
+                    >
+                      No order items
+                    </div>
+                  </td>
+
+                  <!-- Other Fields -->
+                  <td>{{ data.coupon_discount || "No coupon_discount" }}</td>
+                  <td>
+                    {{ data.shipment_cost || "No shipment_cost" }}
+                  </td>
+                  <td>
+                    {{ data.total_price || "No total_price" }}
+                  </td>
+                  <td>{{ data.notes || "No notes" }}</td>
+                  <td>{{ data.payment_method || "No payment_method" }}</td>
+
+                  <!-- Admin Data -->
+                  <td>
+                    {{ data.admin || "N/A" }}
+                  </td>
+
+                  <td>{{ data.created_at | date : "medium" }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

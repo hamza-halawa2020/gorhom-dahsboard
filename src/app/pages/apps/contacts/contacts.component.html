@@ -1,0 +1,139 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Cities"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="contacts">
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <!--end side content-->
+    <div class="contact-content w-100 pb-0">
+      <div
+        class="contact-content position-relative px-4 mx-n4"
+        id="contact-content"
+      >
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        <div class="contact-contact" id="contact-contact">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Message</th>
+                  <th scope="col">CreatedAt</th>
+                  <th scope="col">Delete</th>
+                </tr>
+              </thead>
+
+              <tbody id="contact-list">
+                <tr *ngFor="let data of contacts; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.name || "No name" }}</td>
+                  <td>{{ data.email || "No email" }}</td>
+                  <td>{{ data.phone || "No phone" }}</td>
+                  <td>{{ data.title || "No title" }}</td>
+                  <td>{{ data.message || "No message" }}</td>
+                  <td>{{ data.created_at | date }}</td>
+                  <td>
+                    <div class="hstack gap-2">
+                      <button
+                        class="btn btn-sm btn-subtle-danger remove-list"
+                        (click)="removeContactItemModal.show()"
+                      >
+                        <i class="ri-delete-bin-5-fill align-bottom"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- removeFileItemModal -->
+                  <div
+                    bsModal
+                    #removeContactItemModal="bs-modal"
+                    id="removeContactItemModal"
+                    class="modal fade zoomIn"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="removeContactItemModal.hide()"
+                            id="close-removecontactmodal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mt-2 text-center">
+                            <i class="ti ti-trash fs-1 text-danger"></i>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                              <h5>Are you sure ?</h5>
+                              <p class="text-muted mx-4 mb-0">
+                                Are you sure you want to remove this contact ?
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
+                          >
+                            <button
+                              type="button"
+                              class="btn w-sm btn-light"
+                              (click)="removeContactItemModal.hide()"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn w-sm btn-danger"
+                              id="remove-contactitem"
+                              (click)="deleteContact(data.id)"
+                            >
+                              Yes, Delete It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal-dialog -->
+                  </div>
+
+                  <!--end update contact-->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

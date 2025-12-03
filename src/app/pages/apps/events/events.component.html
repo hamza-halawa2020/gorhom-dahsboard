@@ -1,0 +1,385 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Events"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="events">
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <div class="event-content w-100 pb-0">
+      <div class="col">
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+        <button class="btn btn-success w-100" (click)="createEventModal.show()">
+          <i class="ri-add-line align-bottom"></i> Add New Event
+        </button>
+      </div>
+
+      <div
+        class="event-content position-relative px-4 mx-n4"
+        id="event-content"
+      >
+        <div class="event-event" id="event-event">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Tag</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Content</th>
+                  <th scope="col">Image</th>
+                  <th scope="col">Created By</th>
+                  <th scope="col">Created At</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="event-list">
+                <tr *ngFor="let data of events; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.category || "No Category" }}</td>
+                  <td>{{ data.tag || "No Tag" }}</td>
+                  <td>
+                    <a [routerLink]="['/apps/events', data.id]">
+                      {{ data.title || "No Title" }}
+                    </a>
+                  </td>
+                  <td>{{ data.content || "No Content" }}</td>
+                  <td>
+                    <img
+                      src="{{ image + data.image }}"
+                      alt="{{ data.image }}"
+                      height="25px"
+                    />
+                  </td>
+                  <td>{{ data.admin || "No Admin" }}</td>
+                  <td>{{ data.created_at | date }}</td>
+                  <td>
+                    <div class="hstack gap-2">
+                      <button
+                        class="btn btn-sm btn-subtle-danger remove-list"
+                        (click)="removeEventItemModal.show()"
+                      >
+                        <i class="ri-delete-bin-5-fill align-bottom"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-subtle-info edit-list"
+                        (click)="openEditEventModal(data); updateEvent.show()"
+                      >
+                        <i class="ri-pencil-fill align-bottom"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <div
+                    bsModal
+                    #removeEventItemModal="bs-modal"
+                    id="removeEventItemModal"
+                    class="modal fade zoomIn"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="removeEventItemModal.hide()"
+                            id="close-removeeventmodal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mt-2 text-center">
+                            <i class="ti ti-trash fs-1 text-danger"></i>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                              <h5>Are you sure?</h5>
+                              <p class="text-muted mx-4 mb-0">
+                                Are you sure you want to remove this event?
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
+                          >
+                            <button
+                              type="button"
+                              class="btn w-sm btn-light"
+                              (click)="removeEventItemModal.hide()"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn w-sm btn-danger"
+                              id="remove-eventitem"
+                              (click)="deleteEvent(data.id)"
+                            >
+                              Yes, Delete It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    bsModal
+                    #updateEvent="bs-modal"
+                    class="modal fade"
+                    id="updateEvent"
+                    tabindex="-1"
+                    aria-labelledby="updateEventLabel"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content border-0">
+                        <div class="modal-header p-3 bg-success-subtle">
+                          <h5 class="modal-title" id="updateEventLabel">
+                            Update Event Info
+                          </h5>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="updateEvent.hide()"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="row col">
+                            <div class="col">
+                              <label for="category-select" class="form-label"
+                                >Select Category</label
+                              >
+                              <select
+                                id="category-select"
+                                class="form-control"
+                                [(ngModel)]="editEventData.category_id"
+                              >
+                                <option
+                                  *ngFor="let category of categories"
+                                  [value]="category.id"
+                                >
+                                  {{ category.name || "No Category" }}
+                                </option>
+                              </select>
+                            </div>
+                            <div class="col">
+                              <label for="tag-select" class="form-label"
+                                >Select Tag</label
+                              >
+                              <select
+                                id="tag-select"
+                                class="form-control"
+                                [(ngModel)]="editEventData.tag_id"
+                              >
+                                <option
+                                  *ngFor="let tag of tags"
+                                  [value]="tag.id"
+                                >
+                                  {{ tag.name || "No Tag" }}
+                                </option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col">
+                              <label for="title-input" class="form-label"
+                                >Title</label
+                              >
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="title-input"
+                                autocomplete="off"
+                                placeholder="Enter Event title"
+                                [(ngModel)]="editEventData.title"
+                              />
+                            </div>
+                          </div>
+                          <div class="col">
+                            <label for="content-input" class="form-label"
+                              >Content</label
+                            >
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="content-input"
+                              autocomplete="off"
+                              placeholder="Enter Event content"
+                              [(ngModel)]="editEventData.content"
+                            />
+                          </div>
+                          <div class="col">
+                            <label for="image-input" class="form-label"
+                              >Image</label
+                            >
+                            <input
+                              type="file"
+                              class="form-control"
+                              id="image-input"
+                              accept="image/*"
+                              (change)="onFileSelected($event)"
+                            />
+                          </div>
+                          <div class="hstack gap-2 justify-content-end">
+                            <button
+                              type="button"
+                              class="btn btn-ghost-success"
+                              (click)="updateEvent.hide()"
+                            >
+                              <i class="ri-close-fill align-bottom"></i> Close
+                            </button>
+                            <button
+                              type="submit"
+                              class="btn btn-primary"
+                              id="addNewEvent"
+                              (click)="editEvent(data.id); updateEvent.hide()"
+                            >
+                              Update Event
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    bsModal
+    #createEventModal="bs-modal"
+    class="modal fade zoomIn"
+    id="createEventModal"
+    tabindex="-1"
+    aria-labelledby="createEventModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header p-3 bg-success-subtle">
+          <h5 class="modal-title" id="createEventModalLabel">Create Event</h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="createEventModal.hide()"
+            id="addEventBtn-close"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="row col">
+              <div class="col">
+                <label for="category-select" class="form-label"
+                  >Select Category</label
+                >
+                <select
+                  id="category-select"
+                  class="form-control"
+                  [(ngModel)]="addNewEvent.category_id"
+                >
+                  <option
+                    *ngFor="let category of categories"
+                    [value]="category.id"
+                  >
+                    {{ category.name || "No Category" }}
+                  </option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="tag-select" class="form-label">Select Tag</label>
+                <select
+                  id="tag-select"
+                  class="form-control"
+                  [(ngModel)]="addNewEvent.tag_id"
+                >
+                  <option *ngFor="let tag of tags" [value]="tag.id">
+                    {{ tag.name || "No Tag" }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <label for="title-input" class="form-label">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="title-input"
+                  autocomplete="off"
+                  placeholder="Enter Event title"
+                  [(ngModel)]="addNewEvent.title"
+                />
+              </div>
+            </div>
+            <div class="col">
+              <label for="content-input" class="form-label">Content</label>
+              <input
+                type="text"
+                class="form-control"
+                id="content-input"
+                autocomplete="off"
+                placeholder="Enter Event content"
+                [(ngModel)]="addNewEvent.content"
+              />
+            </div>
+            <div class="col">
+              <label for="image-input" class="form-label">Image</label>
+              <input
+                type="file"
+                class="form-control"
+                id="image-input"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+              />
+            </div>
+            <div class="hstack gap-2 justify-content-end">
+              <button
+                type="button"
+                class="btn btn-ghost-success"
+                (click)="createEventModal.hide()"
+              >
+                <i class="ri-close-line align-bottom"></i> Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="addEvent(); createEventModal.hide()"
+              >
+                Add Event
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,235 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Event Details"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="eventDetails; else loading" class="container my-4">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h3 class="card-title mb-0">{{ eventDetails.title || "No Title" }}</h3>
+    </div>
+    <div class="card-body">
+      <div class="text-center mb-3">
+        <img
+          *ngIf="eventDetails.image"
+          [src]="image + eventDetails.image"
+          alt="Event Image"
+          class="img-fluid rounded"
+          style="max-height: 300px; object-fit: cover"
+        />
+      </div>
+      <div>
+        <p class="mb-2">
+          <strong>Category:</strong>
+          {{ eventDetails.category || "No Category" }}
+        </p>
+        <p class="mb-2">
+          <strong>Tag:</strong> {{ eventDetails.tag || "No Tag" }}
+        </p>
+        <p class="mb-2">
+          <strong>Content:</strong> {{ eventDetails.content || "No Content" }}
+        </p>
+      </div>
+      <hr />
+      <div>
+        <h5>Additional Images:</h5>
+
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
+        <div class="row g-2">
+          <div
+            class="col-md-3 col-sm-4"
+            *ngFor="let img of additionalImages; let i = index"
+          >
+            <div class="position-relative">
+              <!-- Full Card Image -->
+              <img
+                [src]="image + img.image"
+                alt="Additional Image {{ i + 1 }}"
+                class="img-fluid rounded border w-100"
+                style="max-height: 150px; object-fit: cover; cursor: pointer"
+                (click)="extralarge.show()"
+              />
+
+              <!-- Top-Right Close Button -->
+              <button
+                class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                (click)="removeEventItemModal.show()"
+                style="z-index: 10"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </div>
+
+            <!--  Extra Large modal example -->
+            <div
+              bsModal
+              #extralarge="bs-modal"
+              class="modal fade bs-example-modal-xl transparent-modal"
+            >
+              <div class="modal-dialog modal-xl">
+                <div class="modal-dialog modal-xl">
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <img
+                        [src]="image + img.image"
+                        alt="Additional Image {{ i + 1 }}"
+                        class="img-fluid w-100"
+                      />
+                    </div>
+                  </div>
+                  <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+              </div>
+              <!-- /.modal -->
+            </div>
+
+            <!-- removeFileItemModal -->
+            <div
+              bsModal
+              #removeEventItemModal="bs-modal"
+              id="removeEventItemModal"
+              class="modal fade zoomIn"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button
+                      type="button"
+                      class="btn-close"
+                      (click)="removeEventItemModal.hide()"
+                      id="close-removeeventmodal"
+                    ></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mt-2 text-center">
+                      <i class="ti ti-trash fs-1 text-danger"></i>
+                      <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                        <h5>Are you sure ?</h5>
+                        <p class="text-muted mx-4 mb-0">
+                          Are you sure you want to remove this event ?
+                        </p>
+                      </div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                      <button
+                        type="button"
+                        class="btn w-sm btn-light"
+                        (click)="removeEventItemModal.hide()"
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="button"
+                        class="btn w-sm btn-danger"
+                        id="remove-eventitem"
+                        (click)="deleteImage(img.id)"
+                      >
+                        Yes, Delete It!
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- /.modal-content -->
+              </div>
+              <!-- /.modal-dialog -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="text-end">
+        <button
+          class="btn btn-success"
+          (click)="toggleAddImageForm()"
+          (click)="createEventModal.show()"
+        >
+          <i class="ri-add-line align-bottom"></i> Add More Images
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="container my-4">
+    <div class="card shadow-lg">
+      <div class="card-body text-center">
+        <p>Loading event details...</p>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Start Create Event Modal -->
+<div
+  bsModal
+  #createEventModal="bs-modal"
+  class="modal fade zoomIn"
+  id="createEventModal"
+  tabindex="-1"
+  aria-labelledby="createEventModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header p-3 bg-success-subtle">
+        <h5 class="modal-title" id="createEventModalLabel">Add More Images</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="createEventModal.hide()"
+          id="addEventBtn-close"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="imageUpload" class="form-label">Upload Image</label>
+          <input
+            multiple
+            required
+            type="file"
+            class="form-control"
+            id="imageUpload"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+          />
+        </div>
+        <div>
+          <div class="hstack gap-2 justify-content-end">
+            <button
+              type="button"
+              class="btn btn-ghost-success"
+              (click)="createEventModal.hide()"
+            >
+              <i class="ri-close-line align-bottom"></i> Close
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="addNewCategory"
+              (click)="addImage(id)"
+              (click)="createEventModal.hide()"
+            >
+              Add Image
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end modal-dialog -->
+  </div>
+  <!-- End Create Event Modal -->
+
+  <!-- /.modal -->
+</div>

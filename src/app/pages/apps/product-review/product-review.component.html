@@ -1,0 +1,265 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="productReiviewes"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="productReiviewes">
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <!--end side content-->
+    <div class="productReiviewes-content w-100 pb-0">
+      <div class="col">
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
+        <button
+          class="btn btn-success w-100"
+          (click)="createProductModal.show()"
+        >
+          <i class="ri-add-line align-bottom"></i> Add New productReview
+        </button>
+      </div>
+
+      <div
+        class="productReview-content position-relative px-4 mx-n4"
+        id="productReview-content"
+      >
+        <div class="productReview-productReview" id="productReview-productReview">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">user</th>
+                  <th scope="col">product</th>
+                  <th scope="col">review</th>
+                  <th scope="col">rating</th>
+                  <th scope="col">status</th>
+                  <th scope="col">createdAt</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="productReview-list">
+                <tr *ngFor="let data of productReiviewes; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+                  <td>{{ data.user || "No Product" }}</td>
+                  <td>{{ data.product || "No Product" }}</td>
+                  <td>{{ data.review || "No Product" }}</td>
+                  <td>
+                    <rating
+                      [(ngModel)]="data.rating"
+                      [readonly]="true"
+                      style="color: var(--tb-warning); font-size: 25px"
+                    ></rating>
+                  </td>
+
+                  <td>
+                    <ui-switch
+                      [checked]="data.status === 'active'"
+                      (change)="toggleStatus(data)"
+                      uncheckedLabel="inActive"
+                      checkedLabel="active"
+                      size="small"
+                      class="me-2"
+                    >
+                    </ui-switch>
+
+                    <div class="form-check form-switch custom-switch me-2">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="customSwitch"
+                        [checked]="data.status === 'active'"
+                        (change)="toggleStatus(data)"
+                      />
+                    </div>
+                  </td>
+
+                  <td>{{ data.created_at | date }}</td>
+                  <td>
+                    <div class="hstack gap-2">
+                      <button
+                        class="btn btn-sm btn-subtle-danger remove-list"
+                        (click)="removeProductItemModal.show()"
+                      >
+                        <i class="ri-delete-bin-5-fill align-bottom"></i>
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- removeFileItemModal -->
+                  <div
+                    bsModal
+                    #removeProductItemModal="bs-modal"
+                    id="removeProductItemModal"
+                    class="modal fade zoomIn"
+                    tabindex="-1"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="removeProductItemModal.hide()"
+                            id="close-removeproductmodal"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mt-2 text-center">
+                            <i class="ti ti-trash fs-1 text-danger"></i>
+                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                              <h5>Are you sure ?</h5>
+                              <p class="text-muted mx-4 mb-0">
+                                Are you sure you want to remove this
+                                productReview ?
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
+                          >
+                            <button
+                              type="button"
+                              class="btn w-sm btn-light"
+                              (click)="removeProductItemModal.hide()"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn w-sm btn-danger"
+                              id="remove-productitem"
+                              (click)="deleteProductReview(data.id)"
+                            >
+                              Yes, Delete It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal-dialog -->
+                  </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Create Product Modal -->
+  <div
+    bsModal
+    #createProductModal="bs-modal"
+    class="modal fade zoomIn"
+    id="createProductModal"
+    tabindex="-1"
+    aria-labelledby="createProductModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header p-3 bg-success-subtle">
+          <h5 class="modal-title" id="createProductModalLabel">
+            Create productReview
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="createProductModal.hide()"
+            id="addProductBtn-close"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="col">
+              <label for="category-select" class="form-label"
+                >Select Product</label
+              >
+              <select
+                id="category-select"
+                class="form-control"
+                [(ngModel)]="addNewCouseReview.product_id"
+              >
+                <option *ngFor="let product of products" [value]="product.id">
+                  {{ product.title || "No category" }}
+                </option>
+              </select>
+            </div>
+            <div class="col">
+              <label for="Productname-input" class="form-label">review</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Productname-input"
+                autocomplete="off"
+                placeholder="Enter Product title"
+                [(ngModel)]="addNewCouseReview.review"
+              />
+            </div>
+            <div class="col">
+              <label for="Productname-input" class="form-label">rating</label>
+              <rating
+                [(ngModel)]="addNewCouseReview.rating"
+                [max]="5"
+                style="color: var(--tb-warning); font-size: 25px"
+              ></rating>
+            </div>
+
+            <div class="hstack gap-2 justify-content-end">
+              <button
+                type="button"
+                class="btn btn-ghost-success"
+                (click)="createProductModal.hide()"
+              >
+                <i class="ri-close-line align-bottom"></i> Close
+              </button>
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="addNewCategory"
+                (click)="addProductReview()"
+                (click)="createProductModal.hide()"
+              >
+                Add productReview
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end modal-dialog -->
+  </div>
+  <!-- End Create Product Modal -->
+
+  <!-- /.modal -->
+</div>

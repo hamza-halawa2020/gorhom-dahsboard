@@ -1,0 +1,88 @@
+<!-- Start Breadcrumbs -->
+<app-breadcrumbs title="Payments"></app-breadcrumbs>
+<!-- End Breadcrumbs -->
+
+<div *ngIf="payments">
+  <div class="col">
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  </div>
+  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
+    <div class="payment-content w-100 pb-0">
+      <div
+        class="payment-content position-relative px-4 mx-n4"
+        id="payment-content"
+      >
+        <div class="payment-payment" id="payment-payment">
+          <div class="table-responsive">
+            <table class="table align-middle position-relative table-nowrap">
+              <thead class="table-active">
+                <tr>
+                  <th scope="col">Index</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Order</th>
+                  <th scope="col">Payment Method</th>
+                  <th scope="col">amount</th>
+                  <th scope="col">status</th>
+                  <th scope="col">Notes</th>
+                  <th scope="col">Paymob Order Id</th>
+                  <th scope="col">Transaction Id</th>
+                  <th scope="col">Created At</th>
+                </tr>
+              </thead>
+
+              <tbody id="payment-list">
+                <tr *ngFor="let data of payments; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ data.id }}</td>
+
+                  <td>
+                    <div *ngIf="data.order">
+                      <strong>Order Number:</strong>
+                      {{ data.order?.order_number || "N/A" }}<br />
+                      <strong>Total Price:</strong>
+                      {{ data.order?.total_price || "N/A" }}<br />
+                      <strong>Payment Method:</strong>
+                      {{ data.order?.payment_method || "N/A" }}<br />
+                    </div>
+                    <div *ngIf="!data.order">No order data</div>
+                  </td>
+
+                  <td>{{ data.payment_method || "No payment_method" }}</td>
+                  <td>{{ data.amount || "No amount" }}</td>
+                  <td>{{ data.status || "No status" }}</td>
+                  <td>{{ data.notes || "No notes" }}</td>
+                  <td>{{ data.paymob_order_id || "No paymob_order_id" }}</td>
+                  <td>{{ data.transaction_id || "No transaction_id" }}</td>
+                  <td>{{ data.created_at | date : "medium" }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-controls d-flex justify-content-between mt-3">
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === 1"
+              (click)="previousPage()"
+            >
+              Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button
+              class="btn btn-primary"
+              [disabled]="currentPage === totalPages"
+              (click)="nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
