@@ -1,17 +1,16 @@
 export interface Product {
   id?: number;
-  title?: string;
-  description?: string;
+  title?: { [key: string]: string };     
+  description?: { [key: string]: string }; 
   image?: string;
+  files?: { id: number; path: string }[];
   stock?: boolean;
-  priceBeforeDiscount?: string;
-  discount?: string;
-  priceAfterDiscount?: string;
-  category_id?: string;
-  category?: string;
-  admin_id?: number;
-  admin?: string;
-  productImages?: string[];
-  productReviews?: string;
-  created_at?: Date | string;
+  price_before_discount?: number;
+  discount?: number | null;
+  price_after_discount?: number;
+  category_id?: number;
+  category?: { id: number; name: string };
+  created_by?: number;
+  created_by_name?: string;
+  created_at?: string;
 }
