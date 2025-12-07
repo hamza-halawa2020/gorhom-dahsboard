@@ -21,14 +21,28 @@ export class AuthenticationService {
   }
 
   setTokenInCookie(token: string) {
-    const options = {
-      expires: 1,
-      secure: true,
-      sameSite: 'Strict' as 'Strict',
-      path: '/',
-    };
+    
+    if (!token || token === 'undefined' || token === 'null') {
+      console.error('Invalid token received:', token);
+      return;
+    }
+    
+    // Use secure cookies only in production / HTTPS. In dev (http) set secure=false
+    const secureFlag = !!(typeof window !== 'undefined' && window.location.protocol === 'https:') && !!(environment.production);
+    const sameSiteVal = environment.production ? ('Strict' as const) : ('Lax' as const);
 
-    this.cookieService.set('token', token, options);
+    // ngx-cookie-service set signature may vary by version. We'll call set with explicit args
+    // expires: number of days
+    this.cookieService.set('token', token, 1, '/', undefined, secureFlag, sameSiteVal as any);
+    
+    // Verify it was set
+    const savedToken = this.cookieService.get('token');
+    
+    // Fallback to localStorage if cookie fails
+    if (!savedToken) {
+      console.warn('Cookie failed, using localStorage fallback');
+      localStorage.setItem('token', token);
+    }
   }
 
   isLoggedIn() {

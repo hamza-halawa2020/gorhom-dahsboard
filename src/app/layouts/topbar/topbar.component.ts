@@ -46,24 +46,43 @@ export class TopbarComponent {
     this.authService.logout();
   }
   show() {
-    this.userService.profile().subscribe((data) => {
-      this.userInfo = Object.values(data)[0];
-      // console.log(this.userInfo);
+    this.userService.profile().subscribe({
+      next: (data) => {
+        this.userInfo = Object.values(data)[0];
+      },
+      error: (err) => {
+        console.warn('Failed to load user profile:', err.status);
+        // Don't show error to user, just use default values
+        if (err.status === 404) {
+          // Profile endpoint not available, use fallback
+          this.userInfo = {
+            id: 0,
+            name: 'User',
+            email: '',
+            image: ''
+          } as Profile;
+        }
+      }
     });
   }
 
   windowScroll() {
+    const backToTop = document.getElementById('back-to-top');
+    const pageTopbar = document.getElementById('page-topbar');
+    
     if (
       document.body.scrollTop > 50 ||
       document.documentElement.scrollTop > 50
     ) {
-      (document.getElementById('back-to-top') as HTMLElement).style.display =
-        'block';
-      document.getElementById('page-topbar')?.classList.add('topbar-shadow');
+      if (backToTop) {
+        backToTop.style.display = 'block';
+      }
+      pageTopbar?.classList.add('topbar-shadow');
     } else {
-      (document.getElementById('back-to-top') as HTMLElement).style.display =
-        'none';
-      document.getElementById('page-topbar')?.classList.remove('topbar-shadow');
+      if (backToTop) {
+        backToTop.style.display = 'none';
+      }
+      pageTopbar?.classList.remove('topbar-shadow');
     }
   }
 

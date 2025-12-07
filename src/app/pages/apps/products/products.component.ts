@@ -1,265 +1,415 @@
 import { Component, ViewChild } from '@angular/core';
-import { Product } from './product.model';
-import { environment } from 'src/environments/environment';
 import { ProductsService } from 'src/app/core/services/products.service';
-import { Router } from '@angular/router';
-import { Category } from '../categories/category.model';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
-  styleUrls: ['./products.component.scss'],
+  styleUrls: ['./products.component.scss']
 })
 export class ProductsComponent {
+  @ViewChild('productModal') productModal!: ModalDirective;
+  @ViewChild('deleteModal') deleteModal!: ModalDirective;
 
-  @ViewChild('createProductModal') createProductModal!: ModalDirective;
-  @ViewChild('updateProduct') updateProduct!: ModalDirective;
-  totalPages: number = 0;
-  currentPage: number = 1;
-  products: Product[] = [];
-  categories: Category[] = [];
-  selectedFile: File[] | null = null;
-  image = environment.imgUrl + 'products/';
-  addNewProduct: Product = {};
-  originalProduct: Product = {};
-  successMessage: string = '';
-  errorMessage: string = '';
+  products: any[] = [];
+  categories: any[] = [];
+  currentLang = 'en';
+  currentPage = 1;
+  totalPages = 1;
 
-  constructor(
-    private ProductsService: ProductsService,
-    private router: Router
-  ) {}
+  isEditMode = false;
+  productToDelete: number | null = null;
+
+  mainImage: File | null = null;
+  additionalImages: File[] = [];
+  currentProductImage: string = '';
+  currentProductFiles: any[] = [];
+  activeTabIndex = 0;
+  imageUrl = environment.imgUrl ;
+  
+  
+  // Image preview & loading
+  mainImagePreview: string | null = null;
+  additionalImagesPreview: string[] = [];
+  isUploading = false;
+
+  form: any = {
+    id: null,
+    title: { en: '', ar: '' },
+    description: { en: '', ar: '' },
+    price_before_discount: 0,
+    discount: 0,
+    price_after_discount: 0,
+    category_id: ''
+  };
+
+  // Available languages to add (expandable)
+  availableLangs = [
+    { code: 'en', label: 'English' },
+    { code: 'ar', label: 'العربية' },
+    { code: 'fr', label: 'Français' },
+    { code: 'es', label: 'Español' }
+  ];
+
+  // Selected languages shown in the form (default en + ar)
+  selectedLangs: Array<{ code: string; label: string }> = [
+    { code: 'en', label: 'English' },
+    { code: 'ar', label: 'العربية' }
+  ];
+
+  successMessage = '';
+  errorMessage = '';
+
+  constructor(private productsService: ProductsService) {}
 
   ngOnInit(): void {
-    this.index();
-    this.getAllCategories();
+    this.loadProducts();
+    this.loadCategories();
   }
 
-  onFileSelected(event: any): void {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      this.selectedFile = Array.from(files);
+  loadProducts() {
+    this.productsService.index(this.currentPage).subscribe({
+      next: (res: any) => {
+        this.products = res.data;
+        this.totalPages = res.last_page || 1;
+        this.currentPage = res.current_page || 1;
+      },
+      error: (err) => {
+        console.error('Load products error:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => {
+            window.location.href = '/auth/login';
+          }, 2000);
+        } else {
+          this.errorMessage = 'Failed to load products: ' + (err.error?.message || err.message);
+        }
+      }
+    });
+  }
+
+  loadCategories() {
+    this.productsService.getAllCategories().subscribe({
+      next: (res: any) => {
+        this.categories = res.data || res;
+      },
+      error: (err) => {
+        console.error('Load categories error:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+        } else {
+          this.errorMessage = 'Failed to load categories';
+        }
+      }
+    });
+  }
+
+  nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadProducts(); } }
+  previousPage() { if (this.currentPage > 1) { this.currentPage--; this.loadProducts(); } }
+  goToPage(page: number) { this.currentPage = page; this.loadProducts(); }
+
+  onMainImageChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.mainImage = file;
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.mainImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onAdditionalImagesChange(event: any) {
+    const files: File[] = Array.from(event.target.files);
+    this.additionalImages = files;
+    this.additionalImagesPreview = [];
+    
+    // Create previews for all images
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.additionalImagesPreview.push(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // handle img load error safely
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement | null;
+ 
+  }
+
+  removeMainImagePreview() {
+    this.mainImage = null;
+    this.mainImagePreview = null;
+  }
+
+  removeAdditionalImagePreview(index: number) {
+    this.additionalImages.splice(index, 1);
+    this.additionalImagesPreview.splice(index, 1);
+  }
+
+  get finalPrice(): number {
+    const before = Number(this.form.price_before_discount) || 0;
+    const disc = Number(this.form.discount) || 0;
+    return before - disc;
+  }
+
+  calculateFinalPrice() {
+    this.form.price_after_discount = this.finalPrice;
+  }
+
+  saveProduct() {
+    // ensure at least one title for selected languages
+    for (const lang of this.selectedLangs) {
+      if (!this.form.title?.[lang.code]) {
+        this.errorMessage = `Title (${lang.label}) is required`;
+        return;
+      }
+    }
+    if (!this.form.category_id) {
+      this.errorMessage = 'Please select a category';
+      return;
+    }
+    if (!this.mainImage && !this.isEditMode) {
+      this.errorMessage = 'Main image is required';
+      return;
+    }
+
+    const fd = new FormData();
+
+    // Translations (append dynamically for selected languages)
+    for (const lang of this.selectedLangs) {
+      const code = lang.code;
+      fd.append(`title[${code}]`, this.form.title?.[code] || '');
+      fd.append(`description[${code}]`, this.form.description?.[code] || '');
+    }
+
+    // Prices
+    fd.append('price_before_discount', this.form.price_before_discount.toString());
+    fd.append('discount', this.form.discount.toString());
+    fd.append('price_after_discount', this.finalPrice.toString());
+    fd.append('category_id', this.form.category_id);
+
+    // Images
+    if (this.mainImage) fd.append('image', this.mainImage);
+    this.additionalImages.forEach(img => fd.append('files[]', img));
+
+    // Start loading
+    this.isUploading = true;
+    this.errorMessage = '';
+
+    // Edit mode?
+    if (this.isEditMode) {
+      fd.append('_method', 'PUT');
+      this.productsService.update(this.form.id, fd).subscribe({
+        next: () => this.afterSave('Product updated successfully'),
+        error: (err) => {
+          console.error('Update error', err);
+          if (err.status === 401) {
+            this.errorMessage = 'Session expired. Please login again.';
+            // setTimeout(() => window.location.href = '/auth/login', 2000);
+          } else {
+            this.errorMessage = err.error?.message || 'Update failed';
+          }
+          this.isUploading = false;
+        }
+      });
     } else {
-      this.selectedFile = null;
+      this.productsService.store(fd).subscribe({
+        next: () => this.afterSave('Product created successfully'),
+        error: (err) => {
+          console.error('Create error', err);
+          if (err.status === 401) {
+            this.errorMessage = 'Session expired. Please login again.';
+            // setTimeout(() => window.location.href = '/auth/login', 2000);
+          } else {
+            this.errorMessage = err.error?.message || 'Create failed';
+          }
+          this.isUploading = false;
+        }
+      });
     }
   }
 
-  extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
-    if (error && error.error && error.error.errors) {
-      errorMessage = Object.values(error.error.errors).flat().join(', ');
-    }
-    return errorMessage;
+  afterSave(msg: string) {
+    this.isUploading = false;
+    this.successMessage = msg;
+    setTimeout(() => this.successMessage = '', 4000);
+    this.productModal.hide();
+    this.loadProducts();
+    this.resetForm();
   }
 
-  getAllCategories() {
-    this.ProductsService.getAllCategories().subscribe((data) => {
-      this.categories = Object.values(data)[0];
+  openCreateModal() {
+    this.resetForm();
+    this.productModal.show();
+  }
+
+  openUpdateModal(product: any) {
+    this.isEditMode = true;
+    this.errorMessage = '';
+    
+    // Fetch full product details with translations
+    this.productsService.show(product.id).subscribe({
+      next: (res: any) => {
+        const fullProduct = res.data || res;
+        
+        // Check if title is object (translations) or string
+        let titleObj: any = {};
+        let descObj: any = {};
+        
+        if (typeof fullProduct.title === 'object' && fullProduct.title !== null) {
+          titleObj = { ...fullProduct.title };
+        } else if (typeof fullProduct.title === 'string') {
+          // If backend returns string, use it for all languages
+          titleObj = { en: fullProduct.title, ar: fullProduct.title };
+        }
+        
+        if (typeof fullProduct.description === 'object' && fullProduct.description !== null) {
+          descObj = { ...fullProduct.description };
+        } else if (typeof fullProduct.description === 'string') {
+          descObj = { en: fullProduct.description, ar: fullProduct.description };
+        }
+        
+        this.form = {
+          id: fullProduct.id,
+          title: titleObj,
+          description: descObj,
+          price_before_discount: fullProduct.price_before_discount,
+          discount: fullProduct.discount || 0,
+          price_after_discount: fullProduct.price_after_discount,
+          category_id: fullProduct.category_id || fullProduct.category?.id
+        };
+        
+        // Set selected languages from product title keys
+        const titleKeys = Object.keys(titleObj);
+        if (titleKeys.length > 0) {
+          this.selectedLangs = titleKeys.map((c: string) => {
+            const found = this.availableLangs.find(l => l.code === c);
+            return found ? found : { code: c, label: c.toUpperCase() };
+          });
+        } else {
+          // Default languages if no translations found
+          this.selectedLangs = [
+            { code: 'en', label: 'English' },
+            { code: 'ar', label: 'العربية' }
+          ];
+        }
+        
+        this.mainImage = null;
+        this.additionalImages = [];
+        this.mainImagePreview = null;
+        this.additionalImagesPreview = [];
+        this.currentProductImage = fullProduct.image || '';
+        this.currentProductFiles = fullProduct.files || [];
+        this.activeTabIndex = 0;
+        this.productModal.show();
+      },
+      error: (err) => {
+        console.error('Failed to load product details:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load product details: ' + (err.error?.message || err.message);
+        }
+      }
     });
   }
 
-  addProduct(): void {
-    if (!this.selectedFile) {
-      this.errorMessage = 'Please select an image to upload.';
-      setTimeout(() => (this.errorMessage = ''), 3000);
-      return;
-    }
-
-    const formData = new FormData();
-
-    for (let file of this.selectedFile) {
-      formData.append('image[]', file);
-    }
-
-    formData.append('title', this.addNewProduct.title || '');
-    formData.append('description', this.addNewProduct.description || '');
-    formData.append('stock', '1');
-
-    const priceBeforeDiscount = parseFloat(this.addNewProduct.priceBeforeDiscount || '0') || 0;
-    const discount = parseFloat(this.addNewProduct.discount || '0') || 0;
-    const priceAfterDiscount = priceBeforeDiscount - discount;
-
-    if (priceAfterDiscount < 0) {
-      this.errorMessage = 'Price after discount cannot be negative';
-      setTimeout(() => (this.errorMessage = ''), 3000);
-      return;
-    }
-
-    formData.append('priceBeforeDiscount', priceBeforeDiscount.toString());
-    formData.append('discount', discount.toString());
-    formData.append('priceAfterDiscount', priceAfterDiscount.toString());
-    formData.append('category_id', this.addNewProduct.category_id || '');
-
-    this.ProductsService.store(formData).subscribe(
-      () => {
-        this.index();
-        this.addNewProduct = {};
-        this.selectedFile = null;
-        this.successMessage = 'Product added successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-        this.createProductModal.hide(); // Close the modal
-      },
-      (error: any) => {
-        this.errorMessage = 'Failed to add Product: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
+  confirmDelete(id: number) {
+    this.productToDelete = id;
+    this.deleteModal.show();
   }
 
-  index(): void {
-    this.ProductsService.index().subscribe((data) => {
-      this.products = Object.values(data)[0];
-      // this.totalPages = data.totalPages || 1; // Update totalPages if provided by API
+  deleteConfirmed() {
+    if (!this.productToDelete) return;
+    this.productsService.delete(this.productToDelete).subscribe({
+      next: () => {
+        this.successMessage = 'Product deleted';
+        this.loadProducts();
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          // setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Delete failed: ' + (err.error?.message || err.message);
+        }
+      }
     });
+    this.deleteModal.hide();
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.index();
-    }
-  }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.index();
-    }
-  }
 
-  deleteProduct(id: number | undefined): void {
-    if (!id) return;
-    this.ProductsService.delete(id).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'Product deleted successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage = 'Failed to delete Product: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
-  }
-
-  openUpdateModal(product: Product): void {
-    this.originalProduct = { ...product }; // Store original product data
-    this.addNewProduct = {
-      id: product.id,
-      title: product.title || '',
-      description: product.description || '',
-      category_id: product.category_id || '',
-      priceBeforeDiscount: product.priceBeforeDiscount || '0',
-      discount: product.discount || '0',
-      priceAfterDiscount: product.priceAfterDiscount || '0',
-      stock: product.stock ||true, // Retain original stock value
+  resetForm() {
+    this.form = {
+      id: null,
+      title: { en: '', ar: '' },
+      description: { en: '', ar: '' },
+      price_before_discount: 0,
+      discount: 0,
+      price_after_discount: 0,
+      category_id: ''
     };
-    this.selectedFile = null;
-    this.updateProduct.show(); // Show the modal
+    this.mainImage = null;
+    this.additionalImages = [];
+    this.mainImagePreview = null;
+    this.additionalImagesPreview = [];
+    this.currentProductImage = '';
+    this.currentProductFiles = [];
+    this.isEditMode = false;
+    this.activeTabIndex = 0;
+    this.isUploading = false;
+    // reset to default languages
+    this.selectedLangs = [
+      { code: 'en', label: 'English' },
+      { code: 'ar', label: 'العربية' }
+    ];
   }
 
-  get priceAfterDiscount(): number {
-    const priceBeforeDiscount =
-      this.addNewProduct.priceBeforeDiscount !== '' &&
-      this.addNewProduct.priceBeforeDiscount !== undefined
-        ? parseFloat(this.addNewProduct.priceBeforeDiscount)
-        : parseFloat(this.originalProduct.priceBeforeDiscount || '0');
-
-    const discount =
-      this.addNewProduct.discount !== '' && this.addNewProduct.discount !== undefined
-        ? parseFloat(this.addNewProduct.discount)
-        : parseFloat(this.originalProduct.discount || '0');
-
-    return priceBeforeDiscount - discount;
+  // Add a language to the form. Accepts either an event or a language code string.
+  onLangAdd(eventOrCode: any) {
+    const code = typeof eventOrCode === 'string' ? eventOrCode : eventOrCode?.target?.value;
+    if (!code) return;
+    if (this.selectedLangs.find(l => l.code === code)) return;
+    const info = this.availableLangs.find(l => l.code === code);
+    if (info) this.selectedLangs.push(info);
+    // ensure form objects have keys
+    if (!this.form.title) this.form.title = {};
+    if (!this.form.description) this.form.description = {};
+    this.form.title[code] = this.form.title[code] || '';
+    this.form.description[code] = this.form.description[code] || '';
+    // reset select value (if event was passed)
+    try { if (eventOrCode && eventOrCode.target) (eventOrCode.target as HTMLSelectElement).value = ''; } catch {}
   }
 
-  updatePriceAfterDiscount(): void {
-    this.addNewProduct.priceAfterDiscount = this.priceAfterDiscount.toString();
+  // helper used in template to check if a language is already selected
+  isLangSelected(code: string): boolean {
+    return !!this.selectedLangs?.some(s => s.code === code);
   }
 
-  editProduct(id: number | undefined): void {
-    if (!id) {
-      this.errorMessage = 'Invalid product ID';
-      setTimeout(() => (this.errorMessage = ''), 3000);
+  removeLang(index: number) {
+    if (this.selectedLangs.length <= 1) {
+      this.errorMessage = 'You must keep at least one language';
+      setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
-
-    const formData = new FormData();
-
-    if (this.selectedFile) {
-      for (let file of this.selectedFile) {
-        formData.append('image[]', file);
+    const lang = this.selectedLangs[index];
+    if (lang) {
+      delete this.form.title[lang.code];
+      delete this.form.description[lang.code];
+      this.selectedLangs.splice(index, 1);
+      // adjust active tab if needed
+      if (this.activeTabIndex >= this.selectedLangs.length) {
+        this.activeTabIndex = this.selectedLangs.length - 1;
       }
     }
-
-    if (this.addNewProduct.category_id) {
-      formData.append('category_id', this.addNewProduct.category_id);
-    }
-
-    if (this.addNewProduct.title) {
-      formData.append('title', this.addNewProduct.title);
-    }
-
-    if (this.addNewProduct.description) {
-      formData.append('description', this.addNewProduct.description);
-    }
-
-    const priceBeforeDiscount =
-      this.addNewProduct.priceBeforeDiscount !== '' &&
-      this.addNewProduct.priceBeforeDiscount !== undefined
-        ? parseFloat(this.addNewProduct.priceBeforeDiscount)
-        : parseFloat(this.originalProduct.priceBeforeDiscount || '0');
-
-    const discount =
-      this.addNewProduct.discount !== '' && this.addNewProduct.discount !== undefined
-        ? parseFloat(this.addNewProduct.discount)
-        : parseFloat(this.originalProduct.discount || '0');
-
-    const priceAfterDiscount = priceBeforeDiscount - discount;
-
-    if (priceAfterDiscount < 0) {
-      this.errorMessage = 'Price after discount cannot be negative';
-      setTimeout(() => (this.errorMessage = ''), 3000);
-      return;
-    }
-
-    formData.append('priceBeforeDiscount', priceBeforeDiscount.toString());
-    formData.append('discount', discount.toString());
-    formData.append('priceAfterDiscount', priceAfterDiscount.toString());
-
-    this.ProductsService.update(id, formData).subscribe(
-      () => {
-        this.index();
-        this.addNewProduct = {};
-        this.originalProduct = {};
-        this.selectedFile = null;
-        this.successMessage = 'Product updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-        this.updateProduct.hide(); // Close the modal
-      },
-      (error) => {
-        this.errorMessage = 'Error updating Product: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
-  }
-
-  toggleStatus(product: any): void {
-    const formData = new FormData();
-    const updatedProduct = product.stock == '1' ? '0' : '1';
-    formData.append('stock', updatedProduct);
-
-    this.ProductsService.update(product.id, formData).subscribe(
-      () => {
-        product.stock = updatedProduct;
-        this.successMessage = 'Product status updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage = 'Error updating Product status: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
   }
 }

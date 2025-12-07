@@ -88,20 +88,10 @@ export const MENU: MenuItem[] = [
         parentId: 11,
         icon: 'ti ti-truck',
       },
-      {
-        id: 15,
-        label: 'MENUITEMS.APPS.LIST.ADDRESS',
-        link: '/apps/addreeses',
-        parentId: 11,
-        icon: 'ti ti-map',
-      },
+
     ],
   },
-  {
-    id: 10,
-    label: 'Others',
-    isTitle: true,
-  },
+  
 
   {
     id: 16,
@@ -110,104 +100,6 @@ export const MENU: MenuItem[] = [
     link: '/apps/categories',
     parentId: 10,
   },
-  {
-    id: 28,
-    label: 'MENUITEMS.APPS.LIST.TAGS',
-    icon: 'ti ti-tag',
-    link: '/apps/tags',
-    parentId: 10,
-  },
-  {
-    id: 17,
-    label: 'MENUITEMS.APPS.LIST.CERTIFICATIONS',
-    icon: 'ti ti-certificate',
-    link: '/apps/certifications',
-    parentId: 10,
-  },
+ 
 
-  {
-    id: 19,
-    label: 'MENUITEMS.APPS.LIST.CONTACTS',
-    icon: 'ti ti-address-book',
-    link: '/apps/contacts',
-    parentId: 10,
-  },
-  {
-    id: 20,
-    label: 'MENUITEMS.APPS.LIST.COURSES',
-    icon: 'ti ti-book',
-    subItems: [
-      {
-        id: 21,
-        label: 'MENUITEMS.APPS.LIST.COURSES',
-        link: '/apps/courses',
-        parentId: 20,
-        icon: 'ti ti-book',
-      },
-      {
-        id: 22,
-        label: 'MENUITEMS.APPS.LIST.COURSE_REVIEW',
-        link: '/apps/course-review',
-        parentId: 20,
-        icon: 'ti ti-star',
-      },
-    ],
-  },
-  {
-    id: 23,
-    label: 'MENUITEMS.APPS.LIST.EVENT',
-    icon: 'ti ti-calendar-event',
-    link: '/apps/events',
-    parentId: 10,
-  },
-  {
-    id: 24,
-    label: 'MENUITEMS.APPS.LIST.FAQS',
-    icon: 'ti ti-help',
-    link: '/apps/faqs',
-    parentId: 10,
-  },
-  {
-    id: 25,
-    label: 'MENUITEMS.APPS.LIST.INSTRUCTORS',
-    icon: 'ti ti-school',
-    link: '/apps/instructors',
-    parentId: 10,
-  },
-  {
-    id: 26,
-    label: 'MENUITEMS.APPS.LIST.AD_SIDE_BAR_BANNER',
-    icon: 'bi bi-window-sidebar',
-    link: '/apps/ad-side-bar-banners',
-    parentId: 10,
-  },
-  {
-    id: 26,
-    label: 'MENUITEMS.APPS.LIST.MAIN_SLIDER',
-    icon: 'ti ti-slideshow',
-    link: '/apps/main-sliders',
-    parentId: 10,
-  },
-  {
-    id: 27,
-    label: 'MENUITEMS.APPS.LIST.POSTS',
-    icon: 'ti ti-article',
-    link: '/apps/posts',
-    parentId: 10,
-  },
-
-  {
-    id: 29,
-    label: 'MENUITEMS.APPS.LIST.SOCIAL_LINKS',
-    icon: 'ti ti-share',
-    link: '/apps/social-links',
-    parentId: 10,
-  },
-  {
-    id: 29,
-    label: 'MENUITEMS.APPS.LIST.translate',
-    icon: 'ti ti-language',
-    link: '/apps/translates',
-    parentId: 10,
-  },
 ];

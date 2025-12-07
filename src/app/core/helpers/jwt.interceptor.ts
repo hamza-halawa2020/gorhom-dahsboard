@@ -10,14 +10,21 @@ import { CookieService } from 'ngx-cookie-service';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
-  constructor(private cookieService: CookieService) {}
+  constructor(private cookieService: CookieService) {
+
+  }
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    const token = this.cookieService.get('token');
+    // Try cookie first, then localStorage as fallback
+    let token = this.cookieService.get('token');
+    
+    if (!token || token === 'undefined' || token === 'null') {
+      token = localStorage.getItem('token') || '';
+    }
 
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null') {
       const newRequest = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`,

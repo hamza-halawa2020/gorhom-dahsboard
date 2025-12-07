@@ -47,8 +47,18 @@ export class LoginComponent {
       this.submitted = true;
       this.authenticationService.login(this.loginForm.value).subscribe({
         next: (res: any) => {
-          this.authenticationService.setTokenInCookie(res.token);
-          this.router.navigate(['/']);
+          
+          // Try different possible token locations in response
+          const token = res.token || res.data?.token || res.access_token || res.data?.access_token;
+          
+          if (token) {
+            this.authenticationService.setTokenInCookie(token);
+            this.router.navigate(['/']);
+          } else {
+            console.error('No token found in response:', res);
+            this.errorMessage = 'Login succeeded but no token received';
+            setTimeout(() => (this.errorMessage = ''), 10000);
+          }
         },
         error: (err) => {
           this.errorMessage =

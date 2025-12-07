@@ -1,115 +1,125 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { environment } from 'src/environments/environment';
-import { Product } from '../products/product.model';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-product-details',
   templateUrl: './product-details.component.html',
-  styleUrl: './product-details.component.scss',
+  styleUrls: ['./product-details.component.scss']
 })
 export class ProductDetailsComponent {
-    productDetails: Product | null = null;
-    id: any;
-    image = environment.imgUrl + 'products/';
-    imageFile: File[] = [];
-    showAddImageForm = false;
-    additionalImages: any;
-  
-    selectedImage: File | null = null;
-    successMessage: string = '';
-    errorMessage: string = '';
-  
-    constructor(
-      private activateRoute: ActivatedRoute,
-      private productService: ProductsService
-    ) {}
-  
-    ngOnInit(): void {
-      this.getproductDetails();
-    }
-  
-    extractErrorMessage(error: any): string {
-      let errorMessage = 'An error occurred';
-      if (error && error.error && error.error.errors) {
-        errorMessage = Object.values(error.error.errors).flat().join(', ');
-      }
-      return errorMessage;
-    }
-    getproductDetails(): void {
-      this.activateRoute.params.subscribe((params) => {
-        this.id = +params['id'];
-        this.productService.show(this.id).subscribe((data) => {
-          this.productDetails = Object.values(data)[0];
-          this.additionalImages = this.productDetails?.productImages || [];
-        });
-      });
-    }
-  
-    toggleAddImageForm(): void {
-      this.showAddImageForm = !this.showAddImageForm;
-    }
-  
-    onFileSelected(product: any): void {
-      this.imageFile = Array.from(product.target.files) as File[];
-      for (let file of this.imageFile) {
-        if (file.size > 5 * 1024 * 1024) {
-          this.errorMessage = 'File size exceeds 5 MB';
-          setTimeout(() => (this.errorMessage = ''), 3000);
-  
-          return;
+  @ViewChild('createproductModal') createproductModal!: ModalDirective;
+  @ViewChild('imagePreviewModal') imagePreviewModal!: ModalDirective;
+  @ViewChild('deleteImageModal') deleteImageModal!: ModalDirective;
+
+  productDetails: any = null;
+  additionalImages: any[] = [];
+  imageFiles: File[] = [];
+  id: number = 0;
+  currentLang = 'en';
+  previewImageUrl = '';
+  imageToDelete: number | null = null;
+
+  imageUrl = environment.imgUrl ;
+  successMessage = '';
+  errorMessage = '';
+
+  get mainImageUrl(): string {
+    return this.productDetails?.image ? environment.imgUrl  + this.productDetails.image : '';
+  }
+
+  constructor(
+    private route: ActivatedRoute,
+    private productService: ProductsService
+  ) {}
+
+  ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      this.id = +params['id'];
+      this.loadProduct();
+    });
+  }
+
+  loadProduct() {
+    this.productService.show(this.id).subscribe({
+      next: (res: any) => {
+        this.productDetails = res.data || res;
+        this.additionalImages = this.productDetails.files || [];
+      },
+      error: (err) => {
+        console.error('Failed to load product:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else if (err.status === 404) {
+          this.errorMessage = 'Product not found';
+        } else {
+          this.errorMessage = 'Failed to load product: ' + (err.error?.message || err.message);
         }
       }
-      // console.log(this.imageFile);
-    }
-  
-    addImage(id: any): void {
-      const formData = new FormData();
-      for (let file of this.imageFile) {
-        formData.append('image[]', file);
-      }
-      console.log(formData);
-      this.productService.update(id, formData).subscribe(
-        (response: any) => {
-          this.successMessage = 'Images uploaded successfully!';
-          setTimeout(() => (this.successMessage = ''), 3000);
-          this.getproductDetails();
-  
-          this.additionalImages = [
-            ...this.additionalImages,
-            ...response.data.images,
-          ];
-          this.showAddImageForm = false;
-        },
-        (error: any) => {
-          // console.error('Failed:', error);
-          this.errorMessage =
-            'Failed to upload images. Please try again.' +
-            this.extractErrorMessage(error);
-          setTimeout(() => (this.errorMessage = ''), 3000);
-        }
-      );
-    }
-  
-    deleteImage(imageId: string): void {
-      this.productService.deleteImage(this.id, imageId).subscribe(
-        (response: any) => {
-          this.successMessage = 'Image deleted successfully!';
-          setTimeout(() => (this.errorMessage = ''), 3000);
-  
-          this.additionalImages = this.additionalImages.filter(
-            (img: any) => img.id !== imageId
-          );
-        },
-        (error: any) => {
-          // console.error('Failed to delete image:', error);
-          (this.errorMessage = 'Failed to delete the image. Please try again.'),
-            'danger' + this.extractErrorMessage(error);
-          setTimeout(() => (this.errorMessage = ''), 3000);
-        }
-      );
+    });
+  }
+
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files) {
+      // this.imageFiles = Array.from(files).filter((file: any) => {
+      //   if (file.size > 2 * 1024 * 1024) {
+      //     this.errorMessage = `${file.name} is larger than 2MB`;
+      //     return false;
+      //   }
+      //   return true;
+      // });
     }
   }
-  
 
+  addImages() {
+    if (this.imageFiles.length === 0) return;
+
+    const formData = new FormData();
+    this.imageFiles.forEach(file => {
+      formData.append('files[]', file);
+    });
+
+    // this.productService.addProductImages(this.id, formData).subscribe({
+    //   next: (res: any) => {
+    //     this.successMessage = 'Images added successfully!';
+    //     this.additionalImages = [...this.additionalImages, ...(res.data.files || res.data)];
+    //     this.imageFiles = [];
+    //     setTimeout(() => this.successMessage = '', 4000);
+    //   },
+    //   error: (err) => {
+    //     this.errorMessage = err.error?.message || 'Failed to upload images';
+    //     setTimeout(() => this.errorMessage = '', 5000);
+    //   }
+    // });
+  }
+
+  openImageModal(url: string) {
+    this.previewImageUrl = url;
+    this.imagePreviewModal.show();
+  }
+
+  // confirmDeleteImage(id?: number) {
+  //   this.imageToDelete = id || null;
+  //   this.deleteImageModal.show();
+  // }
+
+  confirmDeleteImage() {
+    // if (!this.imageToDelete) return;
+
+    // this.productService.deleteProductImage(this.id, this.imageToDelete).subscribe({
+    //   next: () => {
+    //     this.additionalImages = this.additionalImages.filter(img => img.id !== this.imageToDelete);
+    //     this.successMessage = 'Image deleted successfully';
+    //     this.deleteImageModal.hide();
+    //     this.imageToDelete = null;
+    //   },
+    //   error: () => {
+    //     this.errorMessage = 'Failed to delete image';
+    //   }
+    // });
+  }
+}

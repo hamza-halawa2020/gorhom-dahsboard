@@ -27,7 +27,6 @@ export class ProductReviewComponent {
   getAllCategories() {
     this.ProductsReviewService.getAllProducts().subscribe((data) => {
       this.products = Object.values(data)[0];
-      // console.log(this.countries);
     });
   }
   extractErrorMessage(error: any): string {
@@ -59,7 +58,6 @@ export class ProductReviewComponent {
     this.ProductsReviewService.index(this.currentPage).subscribe(
       (response: any) => {
         this.productReiviewes = response.data;
-        // console.log(this.productReiviewes);
         this.currentPage = response.meta.current_page;
         this.totalPages = response.meta.last_page;
       }

@@ -21,7 +21,6 @@ export class ProfileComponent {
   show() {
     this.userService.profile().subscribe((data) => {
       this.userInfo = Object.values(data)[0];
-      // console.log(this.userInfo);
     });
   }
 }
