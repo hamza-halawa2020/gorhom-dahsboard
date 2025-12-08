@@ -14,7 +14,6 @@ export class ProductsComponent {
 
   products: any[] = [];
   categories: any[] = [];
-  currentLang = 'en';
   currentPage = 1;
   totalPages = 1;
 
@@ -151,6 +150,10 @@ export class ProductsComponent {
   removeAdditionalImagePreview(index: number) {
     this.additionalImages.splice(index, 1);
     this.additionalImagesPreview.splice(index, 1);
+  }
+
+  get activeLang() {
+    return this.selectedLangs[this.activeTabIndex];
   }
 
   get finalPrice(): number {
@@ -301,6 +304,16 @@ export class ProductsComponent {
           ];
         }
         
+        // Ensure all selected languages have initialized values in form
+        this.selectedLangs.forEach(lang => {
+          if (!this.form.title[lang.code]) {
+            this.form.title[lang.code] = '';
+          }
+          if (!this.form.description[lang.code]) {
+            this.form.description[lang.code] = '';
+          }
+        });
+        
         this.mainImage = null;
         this.additionalImages = [];
         this.mainImagePreview = null;
@@ -409,6 +422,20 @@ export class ProductsComponent {
       // adjust active tab if needed
       if (this.activeTabIndex >= this.selectedLangs.length) {
         this.activeTabIndex = this.selectedLangs.length - 1;
+      }
+    }
+  }
+
+  switchTab(index: number) {
+    this.activeTabIndex = index;
+    // Ensure form values are initialized for the active language
+    const lang = this.selectedLangs[index];
+    if (lang) {
+      if (!this.form.title[lang.code]) {
+        this.form.title[lang.code] = '';
+      }
+      if (!this.form.description[lang.code]) {
+        this.form.description[lang.code] = '';
       }
     }
   }

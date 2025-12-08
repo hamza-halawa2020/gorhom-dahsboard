@@ -13,21 +13,40 @@ export class CitiesService {
   constructor(private http: HttpClient) {}
 
   index(page: number = 1) {
-    return this.http.get(`${this.apiUrl}/cities?page=${page}`);
+    return this.http.get(`${this.apiUrl}/cities?page=${page}`, {
+      withCredentials: true,
+    });
   }
 
   getAllCountries() {
-    return this.http.get(`${this.apiUrl}${this.countries}`);
+    return this.http.get(`${this.apiUrl}${this.countries}`, {
+      withCredentials: true,
+    });
   }
-  store(body: City) {
-    return this.http.post(`${this.apiUrl}${this.data}`, body);
+  
+  store(body: any) {
+    return this.http.post(`${this.apiUrl}${this.data}`, body, {
+      withCredentials: true,
+    });
   }
-  update(body: City) {
-    return this.http.put(`${this.apiUrl}${this.data}/${body.id}`, body);
+  
+  update(id: number, body: any) {
+    return this.http.post(`${this.apiUrl}${this.data}/${id}`, body, {
+      withCredentials: true,
+    });
+  }
+
+  show(id: number) {
+    // Request with 'all' lang to get all translations
+    return this.http.get(`${this.apiUrl}${this.data}/${id}?lang=all`, {
+      withCredentials: true,
+    });
   }
 
   delete(id: number) {
     const url = `${this.apiUrl}${this.data}/${id}`;
-    return this.http.delete(url);
+    return this.http.delete(url, {
+      withCredentials: true,
+    });
   }
 }

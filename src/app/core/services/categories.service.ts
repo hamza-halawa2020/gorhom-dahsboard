@@ -23,6 +23,13 @@ export class CategoriesService {
     return this.http.post(`${this.apiUrl}${this.data}/${id}`, body);
   }
 
+  show(id: number) {
+    // Request with 'all' lang to get all translations
+    return this.http.get(`${this.apiUrl}${this.data}/${id}?lang=all`, {
+      withCredentials: true,
+    });
+  }
+
   delete(id: number) {
     const url = `${this.apiUrl}${this.data}/${id}`;
     return this.http.delete(url);

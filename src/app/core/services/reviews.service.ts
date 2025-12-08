@@ -1,25 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { Country } from 'src/app/pages/apps/countries/country.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class CountriesService {
+export class ReviewsService {
   private apiUrl = environment.backEndUrl;
-  private data = '/countries';
+  private data = '/reviews';
 
   constructor(private http: HttpClient) {}
 
   index(page: number = 1) {
-    return this.http.get(`${this.apiUrl}/countries?page=${page}`, {
+    return this.http.get(`${this.apiUrl}/reviews?page=${page}`, {
       withCredentials: true,
     });
   }
-  
-  getAll() {
-    return this.http.get(`${this.apiUrl}/countries`, {
+
+  getAllProducts() {
+    return this.http.get(`${this.apiUrl}/products`, {
       withCredentials: true,
     });
   }
@@ -29,16 +28,9 @@ export class CountriesService {
       withCredentials: true,
     });
   }
-  
+
   update(id: number, body: any) {
     return this.http.post(`${this.apiUrl}${this.data}/${id}`, body, {
-      withCredentials: true,
-    });
-  }
-
-  show(id: number) {
-    // Request with 'all' lang to get all translations
-    return this.http.get(`${this.apiUrl}${this.data}/${id}?lang=all`, {
       withCredentials: true,
     });
   }

@@ -1,264 +1,142 @@
-<!-- Start Breadcrumbs -->
 <app-breadcrumbs title="Countries"></app-breadcrumbs>
-<!-- End Breadcrumbs -->
 
-<div *ngIf="Countries">
-  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
-    <!--end side content-->
-    <div class="country-content w-100 pb-0">
-      <div class="col">
-        <div *ngIf="successMessage" class="alert alert-success">
-          {{ successMessage }}
-        </div>
+<div *ngIf="countries !== undefined">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Countries Management</h4>
+    <button class="btn btn-success" (click)="openCreateModal()">
+      <i class="ri-add-line align-bottom me-1"></i> Add New Country
+    </button>
+  </div>
 
-        <div *ngIf="errorMessage" class="alert alert-danger">
-          {{ errorMessage }}
-        </div>
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage=''"></button>
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+  </div>
 
-        <button
-          class="btn btn-success w-100"
-          (click)="createCounryModal.show()"
-        >
-          <i class="ri-add-line align-bottom"></i> Add New Country
-        </button>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-primary">
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Cities Count</th>
+          <th>Created By</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let country of countries; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><span class="fw-medium">{{ country.title || 'No Title' }}</span></td>
+          <td><span class="badge bg-info">{{ country.cities?.length || 0 }} cities</span></td>
+          <td>{{ country.createdBy?.name || 'Admin' }}</td>
+          <td>{{ country.created_at | date:'short' }}</td>
+          <td>
+            <button class="btn btn-sm btn-info me-1" (click)="openUpdateModal(country)">
+              <i class="ri-pencil-fill"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="confirmDelete(country.id)">
+              <i class="ri-delete-bin-5-fill"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-center mt-4" *ngIf="totalPages > 1">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="previousPage()">Previous</a>
+        </li>
+        <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index"
+            [class.active]="currentPage === i + 1">
+          <a class="page-link" (click)="currentPage = i + 1; loadCountries()">{{ i + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="nextPage()">Next</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<div bsModal #countryModal="bs-modal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary-subtle">
+        <h5 class="modal-title">{{ isEditMode ? 'Update' : 'Create' }} Country</h5>
+        <button type="button" class="btn-close" (click)="countryModal.hide()"></button>
       </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3 d-flex gap-2 align-items-center">
+            <label class="mb-0">Add language</label>
+            <select class="form-select w-auto" (change)="onLangAdd($event)">
+              <option value="">-- add language --</option>
+              <option *ngFor="let l of availableLangs" [value]="l.code" [disabled]="isLangSelected(l.code)">{{ l.label }}</option>
+            </select>
+          </div>
 
-      <div
-        class="country-content position-relative px-4 mx-n4"
-        id="country-content"
-      >
-        <div class="country-country" id="country-country">
-          <div class="table-responsive">
-            <table class="table align-middle position-relative table-nowrap">
-              <thead class="table-active">
-                <tr>
-                  <th scope="col">Index</th>
-                  <th scope="col">ID</th>
-                  <th scope="col">Country</th>
-                  <th scope="col">CreatedAt</th>
-                  <th scope="col">Action</th>
-                </tr>
-              </thead>
+          <ul class="nav nav-tabs mb-4">
+            <li class="nav-item" *ngFor="let lang of selectedLangs; let idx = index">
+              <a class="nav-link" [class.active]="activeTabIndex===idx" (click)="switchTab(idx)" style="cursor: pointer;">
+                {{ lang.label }}
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" 
+                        (click)="removeLang(idx); $event.stopPropagation();" 
+                        *ngIf="selectedLangs.length > 1">×</button>
+              </a>
+            </li>
+          </ul>
 
-              <tbody id="country-list">
-                <tr *ngFor="let data of Countries; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td>{{ data.id }}</td>
-                  <td>{{ data.name || "No Name" }}</td>
-                  <td>{{ data.created_at | date }}</td>
-                  <td>
-                    <div class="hstack gap-2">
-                      <button
-                        class="btn btn-sm btn-subtle-danger remove-list"
-                        (click)="removeCountryItemModal.show()"
-                      >
-                        <i class="ri-delete-bin-5-fill align-bottom"></i>
-                      </button>
-                      <button
-                        class="btn btn-sm btn-subtle-info edit-list"
-                        (click)="openEditCountryModal(data); updateCountry.show()"
-                      >
-                        <i class="ri-pencil-fill align-bottom"></i>
-                      </button>
-                    </div>
-                  </td>
-
-                  <!-- removeFileItemModal -->
-                  <div
-                    bsModal
-                    #removeCountryItemModal="bs-modal"
-                    id="removeCountryItemModal"
-                    class="modal fade zoomIn"
-                    tabindex="-1"
-                    aria-hidden="true"
-                  >
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <button
-                            type="button"
-                            class="btn-close"
-                            (click)="removeCountryItemModal.hide()"
-                            id="close-removecountrymodal"
-                          ></button>
-                        </div>
-                        <div class="modal-body">
-                          <div class="mt-2 text-center">
-                            <i class="ti ti-trash fs-1 text-danger"></i>
-                            <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                              <h5>Are you sure ?</h5>
-                              <p class="text-muted mx-4 mb-0">
-                                Are you sure you want to remove this country ?
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            class="d-flex gap-2 justify-content-center mt-4 mb-2"
-                          >
-                            <button
-                              type="button"
-                              class="btn w-sm btn-light"
-                              (click)="removeCountryItemModal.hide()"
-                            >
-                              Close
-                            </button>
-                            <button
-                              type="button"
-                              class="btn w-sm btn-danger"
-                              id="remove-countryitem"
-                              (click)="deleteCountry(data.id)"
-                            >
-                              Yes, Delete It!
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- /.modal-content -->
-                    </div>
-                    <!-- /.modal-dialog -->
-                  </div>
-
-                  <!-- update Modal -->
-                  <div
-                  bsModal
-                  #updateCountry="bs-modal"
-                  class="modal fade"
-                  id="updateCountry"
-                  tabindex="-1"
-                  aria-labelledby="updateCountryLabel"
-                  aria-hidden="true"
-                >
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0">
-                      <div class="modal-header p-3 bg-success-subtle">
-                        <h5 class="modal-title" id="updateCountryLabel">
-                          Update Country Info
-                        </h5>
-                        <button
-                          type="button"
-                          class="btn-close"
-                          (click)="updateCountry.hide()"
-                        ></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="mb-3">
-                          <label for="country-title-input" class="form-label">Country</label>
-                          <input
-                            type="text"
-                            id="country-title-input"
-                            class="form-control"
-                            placeholder="Enter Country name"
-                            [(ngModel)]="editCountryData.name"
-                          />
-                        </div>
-                        <div class="hstack gap-2 justify-content-end">
-                          <button
-                            type="button"
-                            class="btn btn-ghost-success"
-                            (click)="updateCountry.hide()"
-                          >
-                            <i class="ri-close-fill align-bottom"></i> Close
-                          </button>
-                          <button
-                            type="submit"
-                            class="btn btn-primary"
-                            id="addNewCountry"
-                            (click)="editCountry(data.id); updateCountry.hide()"
-                          >
-                            Update Country
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+          <div class="tab-content">
+            <div *ngFor="let lang of selectedLangs; let idx = index">
+              <ng-container *ngIf="activeTabIndex === idx">
+                <div class="mb-3">
+                  <label class="form-label">Title ({{lang.label}}) <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" 
+                         [(ngModel)]="form.title[lang.code]"
+                         [name]="'title_'+lang.code" required>
                 </div>
-                  <!--end update country-->
-                </tr>
-              </tbody>
-            </table>
+              </ng-container>
+            </div>
           </div>
-          <div class="pagination-controls d-flex justify-content-between mt-3">
-            <button
-              class="btn btn-primary"
-              [disabled]="currentPage === 1"
-              (click)="previousPage()"
-            >
-              Previous
-            </button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button
-              class="btn btn-primary"
-              [disabled]="currentPage === totalPages"
-              (click)="nextPage()"
-            >
-              Next
+
+          <div class="hstack gap-3 justify-content-end mt-4">
+            <button type="button" class="btn btn-light" (click)="countryModal.hide()" [disabled]="isUploading">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="saveCountry()" [disabled]="isUploading">
+              <span *ngIf="!isUploading">
+                <i class="ri-save-line me-1"></i> {{ isEditMode ? 'Update' : 'Create' }}
+              </span>
+              <span *ngIf="isUploading">
+                <span class="spinner-border spinner-border-sm me-2"></span> Saving...
+              </span>
             </button>
           </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div bsModal #deleteModal="bs-modal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center py-5">
+        <i class="ri-delete-bin-6-line text-danger" style="font-size: 4rem;"></i>
+        <h4 class="mt-3">Delete Country?</h4>
+        <p class="text-muted">This action cannot be undone.</p>
+        <div class="hstack gap-3 justify-content-center">
+          <button class="btn btn-light" (click)="deleteModal.hide()">Cancel</button>
+          <button class="btn btn-danger" (click)="deleteConfirmed()">Yes, Delete</button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Start Create Counry Modal -->
-  <div
-    bsModal
-    #createCounryModal="bs-modal"
-    class="modal fade zoomIn"
-    id="createCounryModal"
-    tabindex="-1"
-    aria-labelledby="createCounryModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header p-3 bg-success-subtle">
-          <h5 class="modal-title" id="createCounryModalLabel">Create Counry</h5>
-          <button
-            type="button"
-            class="btn-close"
-            (click)="createCounryModal.hide()"
-            id="addCounryBtn-close"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <div>
-            <div class="mb-4">
-              <label for="Counryname-input" class="form-label">Country</label>
-
-              <input
-                type="text"
-                class="form-control"
-                id="Countryname-input"
-                autocomplete="off"
-                placeholder="Enter Country name"
-                [(ngModel)]="newCountry.name"
-              />
-            </div>
-            <div class="hstack gap-2 justify-content-end">
-              <button
-                type="button"
-                class="btn btn-ghost-success"
-                (click)="createCounryModal.hide()"
-              >
-                <i class="ri-close-line align-bottom"></i> Close
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                (click)="addCountry()"
-                (click)="createCounryModal.hide()"
-              >
-                Add Country
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- end modal-dialog -->
-  </div>
-  <!-- End Create Counry Modal -->
-
-  <!-- /.modal -->
 </div>

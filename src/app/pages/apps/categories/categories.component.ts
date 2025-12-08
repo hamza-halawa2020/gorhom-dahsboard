@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CategoriesService } from 'src/app/core/services/categories.service';
-import { Category } from './category.model';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -9,129 +9,319 @@ import { environment } from 'src/environments/environment';
   styleUrl: './categories.component.scss',
 })
 export class CategoriesComponent {
-  totalPages: number = 0;
-  currentPage: number = 1;
-  categories: Category[] = [];
-  newCategory: Category = {};
-  editCategoryData: Category = {};
-  successMessage: string = '';
-  errorMessage: string = '';
-  image = environment.imgUrl + 'categories/';
-  selectedFile: File | null = null;
+  @ViewChild('categoryModal') categoryModal!: ModalDirective;
+  @ViewChild('deleteModal') deleteModal!: ModalDirective;
 
-  constructor(private categoriesService: CategoriesService) {}
+  categories: any[] = [];
+  currentPage = 1;
+  totalPages = 1;
+  imageUrl = environment.imgUrl ;
+
+  isEditMode = false;
+  categoryToDelete: number | null = null;
+
+  imageFile: File | null = null;
+  currentCategoryImage: string = '';
+  activeTabIndex = 0;
+
+  // Image preview & loading
+  imagePreview: string | null = null;
+  isUploading = false;
+
+  form: any = {
+    id: null,
+    name: { en: '', ar: '' }
+  };
+
+  // Available languages
+  availableLangs = [
+    { code: 'en', label: 'English' },
+    { code: 'ar', label: 'العربية' },
+    { code: 'fr', label: 'Français' },
+    { code: 'es', label: 'Español' }
+  ];
+
+  // Selected languages (default en + ar)
+  selectedLangs: Array<{ code: string; label: string }> = [
+    { code: 'en', label: 'English' },
+    { code: 'ar', label: 'العربية' }
+  ];
+
+  successMessage = '';
+  errorMessage = '';
+
+  constructor(private categoriesService: CategoriesService) { }
 
   ngOnInit(): void {
-    this.index();
+    this.loadCategories();
   }
 
-  extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
-    if (error && error.error && error.error.errors) {
-      errorMessage = Object.values(error.error.errors).flat().join(', ');
-    }
-    return errorMessage;
-  }
-
-  onImageSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      this.selectedFile = file;
-    }
-  }
-
-  addCategory(): void {
-    const formData = new FormData();
-    if (this.newCategory.name) {
-      formData.append('name', this.newCategory.name);
-    }
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile);
-    }
-
-    this.categoriesService.store(formData).subscribe(
-      () => {
-        this.index();
-        this.newCategory = {};
-        this.selectedFile = null;
-        this.successMessage = 'Category added successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+  loadCategories() {
+    this.categoriesService.index(this.currentPage).subscribe({
+      next: (res: any) => {
+        console.log('Categories response:', res);
+        this.categories = res.data;
+        this.totalPages = res.last_page || 1;
+        this.currentPage = res.current_page || 1;
       },
-      (error) => {
-        this.errorMessage =
-          'Failed to add category: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        console.error('Load categories error:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load categories: ' + (err.error?.message || err.message);
+        }
       }
-    );
-  }
-
-  index(): void {
-    this.categoriesService.index().subscribe((data) => {
-      this.categories = Object.values(data)[0];
     });
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.index();
+  nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadCategories(); } }
+  previousPage() { if (this.currentPage > 1) { this.currentPage--; this.loadCategories(); } }
+  goToPage(page: number) { this.currentPage = page; this.loadCategories(); }
+
+  onImageChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.imageFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.index();
-    }
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement | null;
   }
 
-  deleteCategory(id: number | undefined): void {
-    if (!id) return;
-   
-    this.categoriesService.delete(id).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'Category deleted successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage =
-          'Failed to delete category: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+  get activeLang() {
+    return this.selectedLangs[this.activeTabIndex];
+  }
+
+  removeImagePreview() {
+    this.imageFile = null;
+    this.imagePreview = null;
+  }
+
+  saveCategory() {
+    // Ensure at least one name for selected languages
+    for (const lang of this.selectedLangs) {
+      if (!this.form.name?.[lang.code]) {
+        this.errorMessage = `Name (${lang.label}) is required`;
+        return;
       }
-    );
-  }
-
-  openEditCategoryModal(category: Category): void {
-    this.editCategoryData = { ...category };
-  }
-
-  editCategory(id: number | undefined): void {
-    if (!id) {
-      this.errorMessage = 'Invalid category ID';
+    }
+    if (!this.imageFile && !this.isEditMode) {
+      this.errorMessage = 'Image is required';
       return;
     }
-    const formData = new FormData();
-    if (this.editCategoryData.name) {
-      formData.append('name', this.editCategoryData.name);
-    }
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile);
+
+    const fd = new FormData();
+
+    // Translations
+    for (const lang of this.selectedLangs) {
+      const code = lang.code;
+      fd.append(`name[${code}]`, this.form.name?.[code] || '');
     }
 
-    this.categoriesService.update(id, formData).subscribe(
-      () => {
-        this.index();
-        this.editCategoryData = {};
-        this.selectedFile = null;
-        this.successMessage = 'Category updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+    // Image
+    if (this.imageFile) fd.append('image', this.imageFile);
+
+    // Start loading
+    this.isUploading = true;
+    this.errorMessage = '';
+
+    // Edit mode?
+    if (this.isEditMode) {
+      fd.append('_method', 'PUT');
+      this.categoriesService.update(this.form.id, fd).subscribe({
+        next: () => this.afterSave('Category updated successfully'),
+        error: (err) => {
+          console.error('Update error', err);
+          if (err.status === 401) {
+            this.errorMessage = 'Session expired. Please login again.';
+            setTimeout(() => window.location.href = '/auth/login', 2000);
+          } else {
+            this.errorMessage = err.error?.message || 'Update failed';
+          }
+          this.isUploading = false;
+        }
+      });
+    } else {
+      this.categoriesService.store(fd).subscribe({
+        next: () => this.afterSave('Category created successfully'),
+        error: (err) => {
+          console.error('Create error', err);
+          if (err.status === 401) {
+            this.errorMessage = 'Session expired. Please login again.';
+            setTimeout(() => window.location.href = '/auth/login', 2000);
+          } else {
+            this.errorMessage = err.error?.message || 'Create failed';
+          }
+          this.isUploading = false;
+        }
+      });
+    }
+  }
+
+  afterSave(msg: string) {
+    this.isUploading = false;
+    this.successMessage = msg;
+    setTimeout(() => this.successMessage = '', 4000);
+    this.categoryModal.hide();
+    this.loadCategories();
+    this.resetForm();
+  }
+
+  openCreateModal() {
+    this.resetForm();
+    this.categoryModal.show();
+  }
+
+  openUpdateModal(category: any) {
+    this.isEditMode = true;
+    this.errorMessage = '';
+    
+    // Fetch full category details with translations
+    this.categoriesService.show(category.id).subscribe({
+      next: (res: any) => {
+        const fullCategory = res.data || res;
+        
+        // Check if name is object (translations) or string
+        let nameObj: any = {};
+        
+        if (typeof fullCategory.name === 'object' && fullCategory.name !== null) {
+          nameObj = { ...fullCategory.name };
+        } else if (typeof fullCategory.name === 'string') {
+          nameObj = { en: fullCategory.name, ar: fullCategory.name };
+        }
+        
+        this.form = {
+          id: fullCategory.id,
+          name: nameObj
+        };
+        
+        // Set selected languages from category name keys
+        const nameKeys = Object.keys(nameObj);
+        if (nameKeys.length > 0) {
+          this.selectedLangs = nameKeys.map((c: string) => {
+            const found = this.availableLangs.find(l => l.code === c);
+            return found ? found : { code: c, label: c.toUpperCase() };
+          });
+        } else {
+          this.selectedLangs = [
+            { code: 'en', label: 'English' },
+            { code: 'ar', label: 'العربية' }
+          ];
+        }
+        
+        // Ensure all selected languages have initialized values in form
+        this.selectedLangs.forEach(lang => {
+          if (!this.form.name[lang.code]) {
+            this.form.name[lang.code] = '';
+          }
+        });
+        
+        this.imageFile = null;
+        this.imagePreview = null;
+        this.currentCategoryImage = fullCategory.image || '';
+        this.activeTabIndex = 0;
+        this.categoryModal.show();
       },
-      (error) => {
-        this.errorMessage =
-          'Error updating category: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        console.error('Failed to load category details:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load category details: ' + (err.error?.message || err.message);
+        }
       }
-    );
+    });
+  }
+
+  confirmDelete(id: number) {
+    this.categoryToDelete = id;
+    this.deleteModal.show();
+  }
+
+  deleteConfirmed() {
+    if (!this.categoryToDelete) return;
+    this.categoriesService.delete(this.categoryToDelete).subscribe({
+      next: () => {
+        this.successMessage = 'Category deleted';
+        this.loadCategories();
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Delete failed: ' + (err.error?.message || err.message);
+        }
+      }
+    });
+    this.deleteModal.hide();
+  }
+
+  resetForm() {
+    this.form = {
+      id: null,
+      name: { en: '', ar: '' }
+    };
+    this.imageFile = null;
+    this.imagePreview = null;
+    this.currentCategoryImage = '';
+    this.isEditMode = false;
+    this.activeTabIndex = 0;
+    this.isUploading = false;
+    this.selectedLangs = [
+      { code: 'en', label: 'English' },
+      { code: 'ar', label: 'العربية' }
+    ];
+  }
+
+  onLangAdd(eventOrCode: any) {
+    const code = typeof eventOrCode === 'string' ? eventOrCode : eventOrCode?.target?.value;
+    if (!code) return;
+    if (this.selectedLangs.find(l => l.code === code)) return;
+    const info = this.availableLangs.find(l => l.code === code);
+    if (info) this.selectedLangs.push(info);
+    if (!this.form.name) this.form.name = {};
+    this.form.name[code] = this.form.name[code] || '';
+    try { if (eventOrCode && eventOrCode.target) (eventOrCode.target as HTMLSelectElement).value = ''; } catch { }
+  }
+
+  isLangSelected(code: string): boolean {
+    return !!this.selectedLangs?.some(s => s.code === code);
+  }
+
+  removeLang(index: number) {
+    if (this.selectedLangs.length <= 1) {
+      this.errorMessage = 'You must keep at least one language';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+    const lang = this.selectedLangs[index];
+    if (lang) {
+      delete this.form.name[lang.code];
+      this.selectedLangs.splice(index, 1);
+      if (this.activeTabIndex >= this.selectedLangs.length) {
+        this.activeTabIndex = this.selectedLangs.length - 1;
+      }
+    }
+  }
+
+  switchTab(index: number) {
+    this.activeTabIndex = index;
+    // Ensure form values are initialized for the active language
+    const lang = this.selectedLangs[index];
+    if (lang) {
+      if (!this.form.name[lang.code]) {
+        this.form.name[lang.code] = '';
+      }
+    }
   }
 }

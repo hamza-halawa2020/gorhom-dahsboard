@@ -18,12 +18,13 @@ export const MENU: MenuItem[] = [
         parentId: 4,
         icon: 'ti ti-shopping-cart',
       },
+
       {
         id: 6,
         label: 'MENUITEMS.APPS.LIST.PRODUCT_REVIEW',
-        link: '/apps/product-review',
+        link: '/apps/reviews',
         parentId: 4,
-        icon: 'ti ti-star',
+        icon: 'ri-message-2-line',
       },
     ],
   },
@@ -63,6 +64,13 @@ export const MENU: MenuItem[] = [
     parentId: 10,
   },
   {
+    id: 16,
+    label: 'MENUITEMS.APPS.LIST.CATEGORIES',
+    icon: 'ti ti-list-check',
+    link: '/apps/categories',
+    parentId: 10,
+  },
+  {
     id: 11,
     label: 'MENUITEMS.APPS.LIST.ADDRESS',
     icon: 'ti ti-map-pin',
@@ -92,14 +100,5 @@ export const MENU: MenuItem[] = [
     ],
   },
   
-
-  {
-    id: 16,
-    label: 'MENUITEMS.APPS.LIST.CATEGORIES',
-    icon: 'ti ti-list-check',
-    link: '/apps/categories',
-    parentId: 10,
-  },
- 
 
 ];
