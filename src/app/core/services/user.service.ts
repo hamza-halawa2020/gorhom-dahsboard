@@ -8,29 +8,42 @@ export class UserProfileService {
   private apiUrl = environment.backEndUrl;
   constructor(private http: HttpClient) {}
   private data = '/users';
-  index() {
-    return this.http.get(`${this.apiUrl}${this.data}`);
+  index(page: number = 1) {
+    return this.http.get(`${this.apiUrl}${this.data}?page=${page}`, {
+      withCredentials: true,
+    });
   }
 
   profile() {
     return this.http.get(`${this.apiUrl}/profile`);
   }
   store(body: FormData) {
-    return this.http.post(`${this.apiUrl}${this.data}`, body);
+    return this.http.post(`${this.apiUrl}${this.data}`, body, {
+      withCredentials: true,
+    });
   }
   updateUser(id: number, body: FormData) {
-    return this.http.post(`${this.apiUrl}${this.data}/${id}`, body);
+    return this.http.post(`${this.apiUrl}${this.data}/${id}`, body, {
+      withCredentials: true,
+    });
   }
   show(id: any) {
-    const url = `${this.apiUrl}${this.data}/${id}`;
-    return this.http.get(url);
+    // Request with 'all' lang to get all translations (if applicable)
+    const url = `${this.apiUrl}${this.data}/${id}?lang=all`;
+    return this.http.get(url, {
+      withCredentials: true,
+    });
   }
   update(body: any) {
     const id = body.id;
-    return this.http.put(`${this.apiUrl}${this.data}/${id}`, body);
+    return this.http.put(`${this.apiUrl}${this.data}/${id}`, body, {
+      withCredentials: true,
+    });
   }
   delete(id: number) {
     const url = `${this.apiUrl}${this.data}/${id}`;
-    return this.http.delete(url);
+    return this.http.delete(url, {
+      withCredentials: true,
+    });
   }
 }

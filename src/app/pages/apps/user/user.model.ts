@@ -18,6 +18,7 @@ export interface User {
   image?: string;
   phone?: string;
   type?: string;
+  password?: string; // For form use only, not returned from API
   addresses?: Address[];
   email_verified_at?: Date | string;
   created_at?: Date | string;

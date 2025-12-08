@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { UserProfileService } from 'src/app/core/services/user.service';
 import { environment } from 'src/environments/environment';
-import { User } from './user.model';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-users',
@@ -9,149 +9,271 @@ import { User } from './user.model';
   styleUrls: ['./user.component.scss'],
 })
 export class UserComponent {
-  image = environment.imgUrl + 'users/';
-  totalPages: number = 0;
-  currentPage: number = 1;
-  users: User[] = [];
-  newUser: User = {};
-  editUserData: User = {};
-  successMessage: string = '';
-  errorMessage: string = '';
-  selectedFile: File | null = null;
+  @ViewChild('userModal') userModal!: ModalDirective;
+  @ViewChild('deleteModal') deleteModal!: ModalDirective;
+
+  users: any[] = [];
+  currentPage = 1;
+  totalPages = 1;
+
+  isEditMode = false;
+  userToDelete: number | null = null;
+
+  imageFile: File | null = null;
+  currentUserImage: string = '';
+  imageUrl = environment.imgUrl + 'users/';
+
+  // Image preview & loading
+  imagePreview: string | null = null;
+  isUploading = false;
+
+  form: any = {
+    id: null,
+    name: '',
+    email: '',
+    phone: '',
+    password: ''
+  };
+
+  successMessage = '';
+  errorMessage = '';
 
   constructor(private usersService: UserProfileService) {}
 
   ngOnInit(): void {
-    this.index();
+    this.loadUsers();
   }
 
-  extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
-    if (error && error.error && error.error.errors) {
-      errorMessage = Object.values(error.error.errors).flat().join(', ');
-    }
-    return errorMessage;
-  }
-
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-    }
-  }
-
-  addUser(): void {
-    const formData = new FormData();
-    formData.append('name', this.newUser.name || '');
-    formData.append('phone', this.newUser.phone || '');
-    formData.append('email', this.newUser.email || '');
-
-    this.usersService.store(formData).subscribe(
-      () => {
-        this.index();
-        this.newUser = {};
-        this.successMessage = 'User added successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+  loadUsers() {
+    this.usersService.index(this.currentPage).subscribe({
+      next: (res: any) => {
+        this.users = res.data || res;
+        this.totalPages = res.last_page || 1;
+        this.currentPage = res.current_page || 1;
       },
-      (error) => {
-        this.errorMessage =
-          'Failed to add user: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        console.error('Load users error:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => {
+            window.location.href = '/auth/login';
+          }, 2000);
+        } else {
+          this.errorMessage = 'Failed to load users: ' + (err.error?.message || err.message);
+        }
       }
-    );
-  }
-
-  index(): void {
-    this.usersService.index().subscribe((data) => {
-      this.users = Object.values(data)[0];
     });
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.index();
+  nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadUsers(); } }
+  previousPage() { if (this.currentPage > 1) { this.currentPage--; this.loadUsers(); } }
+  goToPage(page: number) { this.currentPage = page; this.loadUsers(); }
+
+  onImageChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.imageFile = file;
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.index();
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement | null;
+  }
+
+  removeImagePreview() {
+    this.imageFile = null;
+    this.imagePreview = null;
+  }
+
+  saveUser() {
+    // Validation
+    if (!this.form.name) {
+      this.errorMessage = 'Name is required';
+      return;
     }
-  }
-
-  deleteUser(id: number | undefined): void {
-    if (!id) return;
-    this.usersService.delete(id).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'User deleted successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage =
-          'Failed to delete user: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
-  }
-
-  openEditUserModal(user: User): void {
-    this.editUserData = { ...user };
-  }
-
-  editUser(id: number | undefined): void {
-    if (!id) {
-      this.errorMessage = 'Invalid user ID';
+    if (!this.form.email && !this.isEditMode) {
+      this.errorMessage = 'Email is required';
+      return;
+    }
+    if (!this.form.password && !this.isEditMode) {
+      this.errorMessage = 'Password is required';
+      return;
+    }
+    if (this.form.password && this.form.password.length < 6) {
+      this.errorMessage = 'Password must be at least 6 characters';
       return;
     }
 
     const formData = new FormData();
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile);
+    formData.append('name', this.form.name);
+    if (this.form.email && !this.isEditMode) {
+      formData.append('email', this.form.email);
     }
-    if (this.editUserData.name) {
-      formData.append('name', this.editUserData.name || '');
+    if (this.form.password && !this.isEditMode) {
+      formData.append('password', this.form.password);
     }
-    if (this.editUserData.phone) {
-      formData.append('phone', this.editUserData.phone || '');
+    if (this.form.phone) {
+      formData.append('phone', this.form.phone);
+    }
+    if (this.imageFile) {
+      formData.append('image', this.imageFile);
     }
 
-    this.usersService.updateUser(id, formData).subscribe(
-      () => {
-        this.index();
-        this.editUserData = {};
-        this.selectedFile = null; 
-        this.successMessage = 'User updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage =
-          'Error updating user: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
+    this.isUploading = true;
+    this.errorMessage = '';
+
+    if (this.isEditMode) {
+      formData.append('_method', 'PUT');
+      this.usersService.updateUser(this.form.id, formData).subscribe({
+        next: () => this.afterSave('User updated successfully'),
+        error: (err) => {
+          console.error('Update error', err);
+          if (err.status === 401) {
+            this.errorMessage = 'Session expired. Please login again.';
+          } else {
+            this.errorMessage = err.error?.message || 'Update failed';
+          }
+          this.isUploading = false;
+        }
+      });
+    } else {
+      this.usersService.store(formData).subscribe({
+        next: () => this.afterSave('User created successfully'),
+        error: (err) => {
+          console.error('Create error', err);
+          if (err.status === 401) {
+            this.errorMessage = 'Session expired. Please login again.';
+          } else {
+            this.errorMessage = err.error?.message || 'Create failed';
+          }
+          this.isUploading = false;
+        }
+      });
+    }
   }
 
-  toggleType(user: any): void {
-    const updatedType = user.type === 'admin' ? 'user' : 'admin';
-    this.usersService
-      .update({
-        id: user.id,
-        type: updatedType,
-      })
-      .subscribe(
-        () => {
-          user.type = updatedType;
-          this.successMessage = 'User type updated successfully!';
-          setTimeout(() => (this.successMessage = ''), 3000);
-        },
-        (error) => {
-          this.errorMessage =
-            'Error updating user type: ' + this.extractErrorMessage(error);
-          setTimeout(() => (this.errorMessage = ''), 3000);
+  afterSave(msg: string) {
+    this.isUploading = false;
+    this.successMessage = msg;
+    setTimeout(() => this.successMessage = '', 4000);
+    this.userModal.hide();
+    this.loadUsers();
+    this.resetForm();
+  }
+
+  openCreateModal() {
+    this.resetForm();
+    this.userModal.show();
+  }
+
+  openEditUserModal(user: any) {
+    this.isEditMode = true;
+    this.errorMessage = '';
+    
+    // Fetch full user details
+    this.usersService.show(user.id).subscribe({
+      next: (res: any) => {
+        const fullUser = res.data || res;
+        this.form = {
+          id: fullUser.id,
+          name: fullUser.name || '',
+          email: fullUser.email || '',
+          phone: fullUser.phone || '',
+          password: ''
+        };
+        this.imageFile = null;
+        this.imagePreview = null;
+        this.currentUserImage = fullUser.image || '';
+        this.userModal.show();
+      },
+      error: (err) => {
+        console.error('Failed to load user details:', err);
+        // Fallback to using the user data from the list
+        this.form = {
+          id: user.id,
+          name: user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          password: ''
+        };
+        this.currentUserImage = user.image || '';
+        this.imageFile = null;
+        this.imagePreview = null;
+        this.userModal.show();
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load user details: ' + (err.error?.message || err.message);
         }
-      );
+      }
+    });
+  }
+
+  confirmDelete(id: number) {
+    this.userToDelete = id;
+    this.deleteModal.show();
+  }
+
+  deleteConfirmed() {
+    if (!this.userToDelete) return;
+    this.usersService.delete(this.userToDelete).subscribe({
+      next: () => {
+        this.successMessage = 'User deleted';
+        this.loadUsers();
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+        } else {
+          this.errorMessage = 'Delete failed: ' + (err.error?.message || err.message);
+        }
+      }
+    });
+    this.deleteModal.hide();
+  }
+
+  resetForm() {
+    this.form = {
+      id: null,
+      name: '',
+      email: '',
+      phone: '',
+      password: ''
+    };
+    this.imageFile = null;
+    this.imagePreview = null;
+    this.currentUserImage = '';
+    this.isEditMode = false;
+    this.isUploading = false;
+  }
+
+  toggleType(user: any) {
+    const updatedType = user.type === 'admin' ? 'user' : 'admin';
+    this.usersService.update({
+      id: user.id,
+      type: updatedType,
+    }).subscribe({
+      next: () => {
+        user.type = updatedType;
+        this.successMessage = 'User type updated successfully';
+        setTimeout(() => this.successMessage = '', 3000);
+        this.loadUsers();
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+        } else {
+          this.errorMessage = 'Error updating user type: ' + (err.error?.message || err.message);
+        }
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
   }
 }
