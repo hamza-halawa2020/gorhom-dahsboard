@@ -1,127 +1,219 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CouponsService } from 'src/app/core/services/coupons.service';
-import { Coupon } from './coupon.model';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-coupons',
   templateUrl: './coupons.component.html',
-  styleUrl: './coupons.component.scss',
+  styleUrls: ['./coupons.component.scss']
 })
 export class CouponsComponent {
-  totalPages: number = 0;
-  currentPage: number = 1;
-  coupons: Coupon[] = [];
-  addNewCoupon: Coupon = {};
-  editCouponData: Coupon = {};
-  successMessage: string = '';
-  errorMessage: string = '';
+  @ViewChild('couponModal') couponModal!: ModalDirective;
+  @ViewChild('deleteModal') deleteModal!: ModalDirective;
+
+  coupons: any[] = [];
+  currentPage = 1;
+  totalPages = 1;
+
+  isEditMode = false;
+  couponToDelete: number | null = null;
+  isUploading = false;
+
+  form: any = {
+    id: null,
+    code: '',
+    type: 'percentage',
+    value: 0,
+    max_discount: null,
+    min_order_amount: null,
+    is_automatic: false,
+    automatic_type: null,
+    usage_limit: null,
+    usage_per_user: null,
+    is_active: true,
+    starts_at: '',
+    expires_at: ''
+  };
+
+  successMessage = '';
+  errorMessage = '';
+
+  // Type options
+  typeOptions = [
+    { value: 'fixed', label: 'Fixed Amount' },
+    { value: 'percentage', label: 'Percentage' }
+  ];
+
+  // Automatic type options
+  automaticTypeOptions = [
+    { value: 'first_order', label: 'First Order' }
+  ];
+
   constructor(private couponsService: CouponsService) {}
 
   ngOnInit(): void {
-    this.index();
-  }
-  extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
-    if (error && error.error && error.error.errors) {
-      errorMessage = Object.values(error.error.errors).flat().join(', ');
-    }
-    return errorMessage;
+    this.loadCoupons();
   }
 
-  addCoupon() {
-    this.couponsService.store(this.addNewCoupon).subscribe(
-      () => {
-        this.index();
-        this.addNewCoupon = {};
-        this.successMessage = 'Coupon added successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+  loadCoupons() {
+    this.couponsService.index(this.currentPage).subscribe({
+      next: (res: any) => {
+        this.coupons = res.data;
+        this.totalPages = res.last_page || 1;
+        this.currentPage = res.current_page || 1;
       },
-      (error: any) => {
-        this.errorMessage =
-          'Failed to add coupon. ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load coupons';
+        }
       }
-    );
-  }
-
-  index(): void {
-    this.couponsService.index(this.currentPage).subscribe((response: any) => {
-      this.coupons = response.data;
-      this.currentPage = response.meta.current_page;
-      this.totalPages = response.meta.last_page;
     });
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.index();
+  nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadCoupons(); } }
+  previousPage() { if (this.currentPage > 1) { this.currentPage--; this.loadCoupons(); } }
+
+  saveCoupon() {
+    if (!this.form.code) {
+      this.errorMessage = 'Code is required';
+      return;
     }
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.index();
+    if (!this.form.type) {
+      this.errorMessage = 'Type is required';
+      return;
     }
-  }
+    if (!this.form.value || this.form.value <= 0) {
+      this.errorMessage = 'Value must be greater than 0';
+      return;
+    }
 
-  deleteCoupon(id: number | undefined): void {
-    if (!id) return;
-    this.couponsService.delete(id).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'Coupon deleted successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage =
-          'Failed to delete coupon' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
-  }
+    const data: any = {
+      code: this.form.code,
+      type: this.form.type,
+      value: this.form.value,
+      is_active: this.form.is_active
+    };
 
+    if (this.form.max_discount) data.max_discount = this.form.max_discount;
+    if (this.form.min_order_amount) data.min_order_amount = this.form.min_order_amount;
+    if (this.form.is_automatic) {
+      data.is_automatic = true;
+      data.automatic_type = this.form.automatic_type || 'first_order';
+    }
+    if (this.form.usage_limit) data.usage_limit = this.form.usage_limit;
+    if (this.form.usage_per_user) data.usage_per_user = this.form.usage_per_user;
+    if (this.form.starts_at) data.starts_at = this.form.starts_at;
+    if (this.form.expires_at) data.expires_at = this.form.expires_at;
 
-openEditCouponModal(coupon: Coupon): void {
-  this.editCouponData = {
-    ...coupon,
-    start_date: coupon.start_date ? new Date(coupon.start_date).toISOString().split('T')[0] : '',
-    end_date: coupon.end_date ? new Date(coupon.end_date).toISOString().split('T')[0] : ''
-  };
-}
-  editCoupon(id: number | undefined): void {
-    if (!id) return;
-    this.couponsService.update({ id, ...this.editCouponData }).subscribe(
-      () => {
-        this.index();
-        this.editCouponData = {};
-        this.successMessage = 'Coupon updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        this.errorMessage =
-          'Error updating Coupon: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
-  }
+    this.isUploading = true;
+    this.errorMessage = '';
 
-  toggleStatus(coupon: any): void {
-    const updatedStatus = !coupon.is_active;
-    this.couponsService
-      .update({ id: coupon.id, is_active: updatedStatus })
-      .subscribe(
-        () => {
-          coupon.is_active = updatedStatus;
-          this.successMessage = 'Coupon status updated successfully!';
-          setTimeout(() => (this.successMessage = ''), 3000);
-        },
-        (error) => {
-          this.errorMessage =
-            'Error updating coupon status: ' + this.extractErrorMessage(error);
-          setTimeout(() => (this.errorMessage = ''), 3000);
+    if (this.isEditMode) {
+      data._method = 'PUT';
+      this.couponsService.update(this.form.id, data).subscribe({
+        next: () => this.afterSave('Coupon updated successfully'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Update failed';
+          this.isUploading = false;
         }
-      );
+      });
+    } else {
+      this.couponsService.store(data).subscribe({
+        next: () => this.afterSave('Coupon created successfully'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Create failed';
+          this.isUploading = false;
+        }
+      });
+    }
+  }
+
+  afterSave(msg: string) {
+    this.isUploading = false;
+    this.successMessage = msg;
+    setTimeout(() => this.successMessage = '', 4000);
+    this.couponModal.hide();
+    this.loadCoupons();
+    this.resetForm();
+  }
+
+  openCreateModal() {
+    this.resetForm();
+    this.couponModal.show();
+  }
+
+  openUpdateModal(coupon: any) {
+    this.isEditMode = true;
+    this.form = {
+      id: coupon.id,
+      code: coupon.code,
+      type: coupon.type,
+      value: coupon.value,
+      max_discount: coupon.max_discount,
+      min_order_amount: coupon.min_order_amount,
+      is_automatic: coupon.is_automatic || false,
+      automatic_type: coupon.automatic_type,
+      usage_limit: coupon.usage_limit,
+      usage_per_user: coupon.usage_per_user,
+      is_active: coupon.is_active,
+      starts_at: coupon.starts_at ? new Date(coupon.starts_at).toISOString().split('T')[0] : '',
+      expires_at: coupon.expires_at ? new Date(coupon.expires_at).toISOString().split('T')[0] : ''
+    };
+    this.couponModal.show();
+  }
+
+  confirmDelete(id: number) {
+    this.couponToDelete = id;
+    this.deleteModal.show();
+  }
+
+  deleteConfirmed() {
+    if (!this.couponToDelete) return;
+    this.couponsService.delete(this.couponToDelete).subscribe({
+      next: () => {
+        this.successMessage = 'Coupon deleted';
+        this.loadCoupons();
+      },
+      error: (err) => {
+        this.errorMessage = 'Delete failed';
+      }
+    });
+    this.deleteModal.hide();
+  }
+
+  resetForm() {
+    this.form = {
+      id: null,
+      code: '',
+      type: 'percentage',
+      value: 0,
+      max_discount: null,
+      min_order_amount: null,
+      is_automatic: false,
+      automatic_type: null,
+      usage_limit: null,
+      usage_per_user: null,
+      is_active: true,
+      starts_at: '',
+      expires_at: ''
+    };
+    this.isEditMode = false;
+    this.isUploading = false;
+  }
+
+  getTypeBadgeClass(type: string): string {
+    return type === 'fixed' ? 'bg-success' : 'bg-info';
+  }
+
+  getStatusBadgeClass(isActive: boolean): string {
+    return isActive ? 'bg-success' : 'bg-danger';
+  }
+
+  isExpired(expiresAt: string): boolean {
+    if (!expiresAt) return false;
+    return new Date(expiresAt) < new Date();
   }
 }
