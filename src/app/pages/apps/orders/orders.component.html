@@ -1,191 +1,284 @@
-<!-- Start Breadcrumbs -->
 <app-breadcrumbs title="Orders"></app-breadcrumbs>
-<!-- End Breadcrumbs -->
 
-<div *ngIf="orders">
-  <div class="col">
-    <div *ngIf="successMessage" class="alert alert-success">
-      {{ successMessage }}
-    </div>
-
-    <div *ngIf="errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
-    </div>
-
-    <button class="btn btn-success w-100" (click)="exportPendingOrders()">
-      <i class="ri-add-line align-bottom"></i> Export Pending Orders To Excel
+<div *ngIf="orders !== undefined">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Orders Management</h4>
+    <button class="btn btn-success" (click)="exportPendingOrders()">
+      <i class="ri-file-excel-line align-bottom me-1"></i> Export Pending Orders
     </button>
   </div>
-  <div class="chat-wrapper d-lg-flex gap-3 gap-lg-4 p-xl-1 pt-md-5 p-lg-1">
-    <div class="order-content w-100 pb-0">
-      <div
-        class="order-content position-relative px-4 mx-n4"
-        id="order-content"
-      >
-        <div class="order-order" id="order-order">
-          <div class="table-responsive">
-            <table class="table align-middle position-relative table-nowrap">
-              <thead class="table-active">
-                <tr>
-                  <th scope="col">Index</th>
-                  <th scope="col">ID</th>
-                  <th scope="col">Order Number</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">User Data</th>
-                  <th scope="col">Client Data</th>
-                  <th scope="col">Address</th>
-                  <th scope="col">Order Items</th>
-                  <th scope="col">Coupon</th>
-                  <th scope="col">Shipment</th>
-                  <th scope="col">Total Price</th>
-                  <th scope="col">Notes</th>
-                  <th scope="col">Payment Method</th>
-                  <th scope="col">Changed By</th>
-                  <th scope="col">Created At</th>
-                </tr>
-              </thead>
 
-              <tbody id="order-list">
-                <tr *ngFor="let data of orders; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td>{{ data.id }}</td>
-                  <td>{{ data.order_number || "No order_number" }}</td>
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage=''"></button>
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+  </div>
 
-                  <!-- Change Status Form -->
-                  <td>
-                    {{ data.status || "No status" }}
-                    <form
-                      #statusForm="ngForm"
-                      (ngSubmit)="
-                        changeStatus(data.id, statusForm.value.status)
-                      "
-                    >
-                      <div class="input-group">
-                        <select
-                          class="form-select"
-                          name="status"
-                          [(ngModel)]="data.status"
-                          required
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Canceled">Canceled</option>
-                          <option value="Returned">Returned</option>
-                          <option value="Awaiting Payment">
-                            Awaiting Payment
-                          </option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                        </select>
-                        <button
-                          type="submit"
-                          class="btn btn-primary"
-                          [disabled]="statusForm.invalid"
-                        >
-                          <i class="ri-check-line"></i>
-                        </button>
-                      </div>
-                    </form>
-                  </td>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-primary">
+        <tr>
+          <th>#</th>
+          <th>Client</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Discount</th>
+          <th>Final Amount</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div>
+              <div class="fw-medium">{{ order.client?.name }}</div>
+              <div class="small text-muted">
+                <i class="ri-phone-line me-1"></i>{{ order.client?.phone }}
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-info">{{ order.items?.length || 0 }} items</span>
+          </td>
+          <td>
+            <span class="fw-medium">{{ order.total_amount | currency:'EGP ' }}</span>
+          </td>
+          <td>
+            <span class="text-danger" *ngIf="order.discount_amount > 0">
+              -{{ order.discount_amount | currency:'EGP ' }}
+            </span>
+            <span class="text-muted" *ngIf="!order.discount_amount || order.discount_amount === 0">
+              No discount
+            </span>
+          </td>
+          <td>
+            <span class="fw-bold text-success">{{ order.final_amount | currency:'EGP ' }}</span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+              {{ order.status }}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex align-items-center">
+              <i [class]="getPaymentMethodIcon(order.payment_method)" class="me-1"></i>
+              <span class="small">{{ getPaymentMethodLabel(order.payment_method) }}</span>
+            </div>
+          </td>
+          <td>{{ order.created_at | date:'short' }}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-1" (click)="viewOrderDetails(order.id)" title="View Details">
+              <i class="ri-eye-line"></i>
+            </button>
+            <button class="btn btn-sm btn-warning" (click)="openStatusModal(order)" title="Change Status">
+              <i class="ri-refresh-line"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-                  <!-- user data -->
-                  <td>
-                    <div *ngIf="data.user">
-                      <strong>User Name:</strong>
-                      {{ data.user?.name || "N/A" }}<br />
-                      <strong>User Email:</strong>
-                      {{ data.user?.email || "N/A" }}<br />
-                      <strong>User Phone:</strong>
-                      {{ data.user?.phone || "N/A" }}<br />
-                    </div>
-                    <div *ngIf="!data.user">No user data</div>
-                  </td>
+  <div class="d-flex justify-content-center mt-4" *ngIf="totalPages > 1">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="previousPage()">Previous</a>
+        </li>
+        <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index"
+            [class.active]="currentPage === i + 1">
+          <a class="page-link" (click)="currentPage = i + 1; loadOrders()">{{ i + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="nextPage()">Next</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
 
-                  <!-- client data -->
-                  <td>
-                    <div *ngIf="data.client">
-                      <strong>Client Name:</strong>
-                      {{ data.client?.name || "N/A" }}<br />
-                      <strong>Client Email:</strong>
-                      {{ data.client?.email || "N/A" }}<br />
-                      <strong>Client Phone:</strong>
-                      {{ data.client?.phone || "N/A" }}<br />
-                    </div>
-                    <div *ngIf="!data.client">No client data</div>
-                  </td>
-
-                  <!-- user data -->
-                  <td>
-                    <div *ngIf="data.address">
-                      <strong>Country:</strong>
-                      {{ data.address.country || "N/A" }}<br />
-                      <strong>City:</strong> {{ data.address.city || "N/A"
-                      }}<br />
-                      <strong>Address:</strong>
-                      {{ data.address.address || "N/A" }}<br />
-                    </div>
-                    <div *ngIf="!data.address">No address data</div>
-                  </td>
-
-                  <!-- Order Items -->
-                  <td>
-                    <div *ngIf="data.orderItems && data.orderItems.length > 0">
-                      <div *ngFor="let item of data.orderItems">
-                        <strong>Product Name:</strong>
-                        {{ item.product?.title || "N/A" }}<br />
-                        <strong>Product Price:</strong>
-                        {{ item.product?.priceAfterDiscount || "N/A" }}<br />
-                        <strong>Quantity:</strong> {{ item.quantity || "N/A"
-                        }}<br />
-                        <strong>Total:</strong>
-                        {{ item.total || "N/A" }}
-                      </div>
-                    </div>
-                    <div
-                      *ngIf="!data.orderItems || data.orderItems.length === 0"
-                    >
-                      No order items
-                    </div>
-                  </td>
-
-                  <!-- Other Fields -->
-                  <td>{{ data.coupon_discount || "No coupon_discount" }}</td>
-                  <td>
-                    {{ data.shipment_cost || "No shipment_cost" }}
-                  </td>
-                  <td>
-                    {{ data.total_price || "No total_price" }}
-                  </td>
-                  <td>{{ data.notes || "No notes" }}</td>
-                  <td>{{ data.payment_method || "No payment_method" }}</td>
-
-                  <!-- Admin Data -->
-                  <td>
-                    {{ data.admin || "N/A" }}
-                  </td>
-
-                  <td>{{ data.created_at | date : "medium" }}</td>
-                </tr>
-              </tbody>
-            </table>
+<!-- Order Details Modal -->
+<div bsModal #orderDetailsModal="bs-modal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary-subtle">
+        <h5 class="modal-title">
+          <i class="ri-file-list-line me-2"></i>Order Details
+        </h5>
+        <button type="button" class="btn-close" (click)="orderDetailsModal.hide()"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedOrder">
+        <div class="row">
+          <!-- Client Information -->
+          <div class="col-md-6 mb-4">
+            <div class="card border">
+              <div class="card-body">
+                <h6 class="card-title text-muted mb-3">
+                  <i class="ri-user-line me-2"></i>Client Information
+                </h6>
+                <div class="mb-2">
+                  <strong>Name:</strong> {{ selectedOrder.client?.name }}
+                </div>
+                <div class="mb-2">
+                  <strong>Phone:</strong> {{ selectedOrder.client?.phone }}
+                </div>
+                <div class="mb-2" *ngIf="selectedOrder.client?.email">
+                  <strong>Email:</strong> {{ selectedOrder.client?.email }}
+                </div>
+                <div class="mb-2">
+                  <strong>Total Orders:</strong> 
+                  <span class="badge bg-info">{{ selectedOrder.client?.orders_count || 0 }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="pagination-controls d-flex justify-content-between mt-3">
-            <button
-              class="btn btn-primary"
-              [disabled]="currentPage === 1"
-              (click)="previousPage()"
-            >
-              Previous
-            </button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button
-              class="btn btn-primary"
-              [disabled]="currentPage === totalPages"
-              (click)="nextPage()"
-            >
-              Next
-            </button>
+
+          <!-- Shipping Information -->
+          <div class="col-md-6 mb-4">
+            <div class="card border">
+              <div class="card-body">
+                <h6 class="card-title text-muted mb-3">
+                  <i class="ri-map-pin-line me-2"></i>Shipping Information
+                </h6>
+                <div class="mb-2">
+                  <strong>Address:</strong> {{ selectedOrder.address }}
+                </div>
+                <div class="mb-2" *ngIf="selectedOrder.shipment">
+                  <strong>Shipping:</strong> {{ selectedOrder.shipment?.country?.title }} - {{ selectedOrder.shipment?.city?.title }}
+                </div>
+                <div class="mb-2" *ngIf="selectedOrder.shipment">
+                  <strong>Shipping Cost:</strong> 
+                  <span class="text-success">{{ selectedOrder.shipment?.cost | currency:'EGP ' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div class="col-12 mb-4">
+            <div class="card border">
+              <div class="card-body">
+                <h6 class="card-title text-muted mb-3">
+                  <i class="ri-shopping-cart-line me-2"></i>Order Items
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of selectedOrder.items">
+                        <td>{{ item.product?.title }}</td>
+                        <td>{{ item.price | currency:'EGP ' }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td class="fw-bold">{{ item.total | currency:'EGP ' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment & Coupon -->
+          <div class="col-md-6 mb-4">
+            <div class="card border">
+              <div class="card-body">
+                <h6 class="card-title text-muted mb-3">
+                  <i class="ri-money-dollar-circle-line me-2"></i>Payment Information
+                </h6>
+                <div class="mb-2">
+                  <strong>Payment Method:</strong> 
+                  <span class="badge bg-secondary">{{ getPaymentMethodLabel(selectedOrder.payment_method) }}</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Status:</strong> 
+                  <span class="badge" [ngClass]="getStatusBadgeClass(selectedOrder.status)">
+                    {{ selectedOrder.status }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="col-md-6 mb-4">
+            <div class="card border border-success">
+              <div class="card-body">
+                <h6 class="card-title text-muted mb-3">
+                  <i class="ri-calculator-line me-2"></i>Order Summary
+                </h6>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Subtotal:</span>
+                  <span class="fw-medium">{{ selectedOrder.total_amount | currency:'EGP ' }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2" *ngIf="selectedOrder.coupon">
+                  <span>Coupon ({{ selectedOrder.coupon?.code }}):</span>
+                  <span class="text-danger">-{{ selectedOrder.discount_amount | currency:'EGP ' }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                  <strong>Final Amount:</strong>
+                  <strong class="text-success fs-5">{{ selectedOrder.final_amount | currency:'EGP ' }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Info -->
+          <div class="col-12" *ngIf="selectedOrder.coupon">
+            <div class="alert alert-info">
+              <i class="ri-coupon-line me-2"></i>
+              <strong>Coupon Applied:</strong> {{ selectedOrder.coupon?.code }}
+              ({{ selectedOrder.coupon?.type === 'percentage' ? selectedOrder.coupon?.value + '%' : (selectedOrder.coupon?.value | currency:'EGP ') }})
+            </div>
           </div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="orderDetailsModal.hide()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Status Modal -->
+<div bsModal #statusModal="bs-modal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title">
+          <i class="ri-refresh-line me-2"></i>Change Order Status
+        </h5>
+        <button type="button" class="btn-close" (click)="statusModal.hide()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Select New Status</label>
+          <select class="form-select" [(ngModel)]="newStatus">
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="statusModal.hide()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateStatus()">
+          <i class="ri-check-line me-1"></i>Update Status
+        </button>
       </div>
     </div>
   </div>

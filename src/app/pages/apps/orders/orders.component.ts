@@ -1,147 +1,133 @@
-import { Component } from '@angular/core';
-import { Order } from './order.model';
-import { Country } from '../countries/country.model';
+import { Component, ViewChild } from '@angular/core';
 import { OrdersService } from 'src/app/core/services/orders.service';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-orders',
   templateUrl: './orders.component.html',
-  styleUrl: './orders.component.scss',
+  styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent {
-  totalPages: number = 0;
-  currentPage: number = 1;
-  orders: Order[] = [];
-  countries: Country[] = [];
-  newOrder: Order = {};
-  successMessage: string = '';
-  errorMessage: string = '';
+  @ViewChild('orderDetailsModal') orderDetailsModal!: ModalDirective;
+  @ViewChild('statusModal') statusModal!: ModalDirective;
+
+  orders: any[] = [];
+  currentPage = 1;
+  totalPages = 1;
+
+  selectedOrder: any = null;
+  selectedOrderId: number | null = null;
+  newStatus: string = '';
+
+  successMessage = '';
+  errorMessage = '';
+
+  // Status options
+  statusOptions = [
+    { value: 'pending', label: 'Pending', class: 'bg-warning' },
+    { value: 'completed', label: 'Completed', class: 'bg-success' },
+    { value: 'cancelled', label: 'Cancelled', class: 'bg-danger' }
+  ];
+
   constructor(private ordersService: OrdersService) {}
 
   ngOnInit(): void {
-    this.index();
-    this.getAllCountries();
-  }
-  extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
-    if (error && error.error && error.error.errors) {
-      errorMessage = Object.values(error.error.errors).flat().join(', ');
-    }
-    return errorMessage;
-  }
-  addOrder(): void {
-    this.ordersService.store(this.newOrder).subscribe(
-      () => {
-        this.index();
-        this.newOrder = {};
-        this.successMessage = 'Order added successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        // console.error('Error adding vity', error);
-        this.errorMessage =
-          'Failed to add order' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
+    this.loadOrders();
   }
 
-  index(): void {
-    this.ordersService.index(this.currentPage).subscribe((response: any) => {
-      this.orders = response.data;
-      this.currentPage = response.meta.current_page;
-      this.totalPages = response.meta.last_page;
+  loadOrders() {
+    this.ordersService.index(this.currentPage).subscribe({
+      next: (res: any) => {
+        this.orders = res.data;
+        this.totalPages = res.last_page || 1;
+        this.currentPage = res.current_page || 1;
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load orders';
+        }
+      }
     });
   }
 
-  changeStatus(orderId: number | undefined, newStatus: string): void {
-    if (!orderId) {
-      this.errorMessage = 'Order ID is missing. Cannot update status.';
-      setTimeout(() => (this.errorMessage = ''), 3000);
-      return;
-    }
+  nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadOrders(); } }
+  previousPage() { if (this.currentPage > 1) { this.currentPage--; this.loadOrders(); } }
 
-    this.ordersService.updateStatus(orderId, newStatus).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'Order status updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+  viewOrderDetails(orderId: number) {
+    this.ordersService.show(orderId).subscribe({
+      next: (res: any) => {
+        this.selectedOrder = res.data;
+        this.orderDetailsModal.show();
       },
-      (error) => {
-        this.errorMessage =
-          'Failed to update order status: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        this.errorMessage = 'Failed to load order details';
       }
-    );
+    });
   }
 
-  exportPendingOrders(): void {
-    this.ordersService.exportPendingOrders().subscribe(
-      (response: Blob) => {
+  openStatusModal(order: any) {
+    this.selectedOrderId = order.id;
+    this.newStatus = order.status;
+    this.statusModal.show();
+  }
+
+  updateStatus() {
+    if (!this.selectedOrderId || !this.newStatus) return;
+
+    this.ordersService.updateStatus(this.selectedOrderId, this.newStatus).subscribe({
+      next: () => {
+        this.successMessage = 'Order status updated successfully';
+        setTimeout(() => this.successMessage = '', 4000);
+        this.statusModal.hide();
+        this.loadOrders();
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to update status';
+      }
+    });
+  }
+
+  exportPendingOrders() {
+    this.ordersService.exportPendingOrders().subscribe({
+      next: (response: Blob) => {
         const blobUrl = window.URL.createObjectURL(response);
         const link = document.createElement('a');
         link.href = blobUrl;
         link.download = 'pending-orders.xlsx';
         link.click();
         window.URL.revokeObjectURL(blobUrl);
-        this.successMessage = 'File Downloaded successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+        this.successMessage = 'File downloaded successfully!';
+        setTimeout(() => this.successMessage = '', 3000);
       },
-      (error) => {
-        this.errorMessage =
-          'Error exporting pending orders: ' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        this.errorMessage = 'Failed to export orders';
       }
-    );
+    });
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.index();
+  getStatusBadgeClass(status: string): string {
+    const statusOption = this.statusOptions.find(s => s.value === status);
+    return statusOption ? statusOption.class : 'bg-secondary';
+  }
+
+  getPaymentMethodIcon(method: string): string {
+    switch (method) {
+      case 'cash_on_delivery': return 'ri-money-dollar-circle-line';
+      case 'visa': return 'ri-bank-card-line';
+      case 'vodafone_cash': return 'ri-smartphone-line';
+      default: return 'ri-question-line';
     }
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.index();
+  getPaymentMethodLabel(method: string): string {
+    switch (method) {
+      case 'cash_on_delivery': return 'Cash on Delivery';
+      case 'visa': return 'Visa';
+      case 'vodafone_cash': return 'Vodafone Cash';
+      default: return method;
     }
-  }
-
-  getAllCountries() {}
-
-  deleteOrder(id: number | undefined): void {
-    if (!id) return;
-    this.ordersService.delete(id).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'Order deleted successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        // console.error('Error deleting order', error);
-        this.errorMessage =
-          'Failed to delete order' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
-  }
-
-  editOrder(id: number | undefined): void {
-    this.ordersService.update({ id, ...this.newOrder }).subscribe(
-      () => {
-        this.index();
-        this.newOrder = {};
-        this.successMessage = 'Order updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        // console.error('Error updating order', error);
-        this.errorMessage =
-          'Error updating order' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
   }
 }

@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Order } from 'src/app/pages/apps/orders/order.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -13,28 +12,40 @@ export class OrdersService {
   constructor(private http: HttpClient) {}
 
   index(page: number = 1) {
-    return this.http.get(`${this.apiUrl}/orders?page=${page}`);
+    return this.http.get(`${this.apiUrl}/orders?page=${page}`, {
+      withCredentials: true,
+    });
+  }
+
+  store(body: any) {
+    return this.http.post(`${this.apiUrl}${this.data}`, body, {
+      withCredentials: true,
+    });
+  }
+
+  show(id: number) {
+    return this.http.get(`${this.apiUrl}${this.data}/${id}`, {
+      withCredentials: true,
+    });
+  }
+
+  updateStatus(orderId: number, status: string) {
+    return this.http.patch(`${this.apiUrl}${this.data}/${orderId}/status`, 
+      { status }, 
+      { withCredentials: true }
+    );
+  }
+
+  getClientOrders(phone: string) {
+    return this.http.get(`${this.apiUrl}${this.data}/client/${phone}`, {
+      withCredentials: true,
+    });
   }
 
   exportPendingOrders() {
     return this.http.get(`${this.apiUrl}/orders-export`, {
       responseType: 'blob',
+      withCredentials: true,
     });
-  }
-  store(body: Order) {
-    return this.http.post(`${this.apiUrl}${this.data}`, body);
-  }
-  update(body: Order) {
-    return this.http.put(`${this.apiUrl}${this.data}/${body.id}`, body);
-  }
-
-  updateStatus(orderId: number, status: string) {
-    const url = `${this.apiUrl}/orders-change/${orderId}`;
-    return this.http.post(url, { status });
-  }
-
-  delete(id: number) {
-    const url = `${this.apiUrl}${this.data}/${id}`;
-    return this.http.delete(url);
   }
 }
