@@ -1,106 +1,197 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ClientsService } from 'src/app/core/services/clients.service';
-import { Country } from '../countries/country.model';
-import { Client } from './client.model';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-clients',
   templateUrl: './clients.component.html',
-  styleUrl: './clients.component.scss',
+  styleUrls: ['./clients.component.scss']
 })
 export class ClientsComponent {
-  totalPages: number = 0;
-  currentPage: number = 1;
-  clients: Client[] = [];
-  countries: Country[] = [];
-  newClient: Client = {};
-  successMessage: string = '';
-  errorMessage: string = '';
+  @ViewChild('clientModal') clientModal!: ModalDirective;
+  @ViewChild('deleteModal') deleteModal!: ModalDirective;
+  @ViewChild('statsModal') statsModal!: ModalDirective;
+
+  clients: any[] = [];
+  currentPage = 1;
+  totalPages = 1;
+
+  isEditMode = false;
+  clientToDelete: number | null = null;
+  isUploading = false;
+
+  // Search filters
+  searchFilters = {
+    phone: '',
+    name: '',
+    email: ''
+  };
+
+  // Client stats
+  clientStats: any = null;
+
+  form: any = {
+    id: null,
+    name: '',
+    phone: '',
+    email: ''
+  };
+
+  successMessage = '';
+  errorMessage = '';
+
   constructor(private clientsService: ClientsService) {}
 
   ngOnInit(): void {
-    this.index();
-    this.getAllCountries();
-  }
-  extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
-    if (error && error.error && error.error.errors) {
-      errorMessage = Object.values(error.error.errors).flat().join(', ');
-    }
-    return errorMessage;
-  }
-  addClient(): void {
-    this.clientsService.store(this.newClient).subscribe(
-      () => {
-        this.index();
-        this.newClient = {};
-        this.successMessage = 'Client added successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        // console.error('Error adding vity', error);
-        this.errorMessage =
-          'Failed to add client' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
+    this.loadClients();
   }
 
-  index(): void {
-    this.clientsService.index(this.currentPage).subscribe((response: any) => {
-      this.clients = response.data;
-      this.currentPage = response.meta.current_page;
-      this.totalPages = response.meta.last_page;
+  loadClients() {
+    const filters = {
+      phone: this.searchFilters.phone || undefined,
+      name: this.searchFilters.name || undefined,
+      email: this.searchFilters.email || undefined
+    };
+
+    this.clientsService.index(this.currentPage, filters).subscribe({
+      next: (res: any) => {
+        this.clients = res.data;
+        this.totalPages = res.last_page || 1;
+        this.currentPage = res.current_page || 1;
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.errorMessage = 'Session expired. Please login again.';
+          setTimeout(() => window.location.href = '/auth/login', 2000);
+        } else {
+          this.errorMessage = 'Failed to load clients';
+        }
+      }
     });
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.index();
+  search() {
+    this.currentPage = 1;
+    this.loadClients();
+  }
+
+  clearSearch() {
+    this.searchFilters = { phone: '', name: '', email: '' };
+    this.currentPage = 1;
+    this.loadClients();
+  }
+
+  nextPage() { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadClients(); } }
+  previousPage() { if (this.currentPage > 1) { this.currentPage--; this.loadClients(); } }
+
+  saveClient() {
+    if (!this.form.name) {
+      this.errorMessage = 'Name is required';
+      return;
+    }
+    if (!this.form.phone) {
+      this.errorMessage = 'Phone is required';
+      return;
+    }
+
+    const data: any = {
+      name: this.form.name,
+      phone: this.form.phone
+    };
+
+    if (this.form.email) data.email = this.form.email;
+
+    this.isUploading = true;
+    this.errorMessage = '';
+
+    if (this.isEditMode) {
+      data._method = 'PUT';
+      this.clientsService.update(this.form.id, data).subscribe({
+        next: () => this.afterSave('Client updated successfully'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Update failed';
+          this.isUploading = false;
+        }
+      });
+    } else {
+      this.clientsService.store(data).subscribe({
+        next: () => this.afterSave('Client created successfully'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Create failed';
+          this.isUploading = false;
+        }
+      });
     }
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.index();
-    }
+  afterSave(msg: string) {
+    this.isUploading = false;
+    this.successMessage = msg;
+    setTimeout(() => this.successMessage = '', 4000);
+    this.clientModal.hide();
+    this.loadClients();
+    this.resetForm();
   }
 
-  getAllCountries() {}
-
-  deleteClient(id: number | undefined): void {
-    if (!id) return;
-    this.clientsService.delete(id).subscribe(
-      () => {
-        this.index();
-        this.successMessage = 'Client deleted successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
-      },
-      (error) => {
-        // console.error('Error deleting client', error);
-        this.errorMessage =
-          'Failed to delete client' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
-      }
-    );
+  openCreateModal() {
+    this.resetForm();
+    this.clientModal.show();
   }
 
-  editClient(id: number | undefined): void {
-    this.clientsService.update({ id, ...this.newClient }).subscribe(
-      () => {
-        this.index();
-        this.newClient = {};
-        this.successMessage = 'Client updated successfully!';
-        setTimeout(() => (this.successMessage = ''), 3000);
+  openUpdateModal(client: any) {
+    this.isEditMode = true;
+    this.form = {
+      id: client.id,
+      name: client.name,
+      phone: client.phone,
+      email: client.email || ''
+    };
+    this.clientModal.show();
+  }
+
+  confirmDelete(id: number) {
+    this.clientToDelete = id;
+    this.deleteModal.show();
+  }
+
+  deleteConfirmed() {
+    if (!this.clientToDelete) return;
+    this.clientsService.delete(this.clientToDelete).subscribe({
+      next: () => {
+        this.successMessage = 'Client deleted';
+        this.loadClients();
       },
-      (error) => {
-        // console.error('Error updating client', error);
-        this.errorMessage =
-          'Error updating client' + this.extractErrorMessage(error);
-        setTimeout(() => (this.errorMessage = ''), 3000);
+      error: (err) => {
+        if (err.status === 400) {
+          this.errorMessage = 'Cannot delete client with existing orders';
+        } else {
+          this.errorMessage = 'Delete failed';
+        }
       }
-    );
+    });
+    this.deleteModal.hide();
+  }
+
+  viewStats(clientId: number) {
+    this.clientsService.getStats(clientId).subscribe({
+      next: (res: any) => {
+        this.clientStats = res.data;
+        this.statsModal.show();
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load statistics';
+      }
+    });
+  }
+
+  resetForm() {
+    this.form = {
+      id: null,
+      name: '',
+      phone: '',
+      email: ''
+    };
+    this.isEditMode = false;
+    this.isUploading = false;
   }
 }
