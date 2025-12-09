@@ -22,18 +22,22 @@ export class ProductDetailsComponent {
   previewImageUrl = '';
   imageToDelete: number | null = null;
 
-  imageUrl = environment.imgUrl ;
+  imageUrl = environment.imgUrl;
   successMessage = '';
   errorMessage = '';
 
   get mainImageUrl(): string {
-    return this.productDetails?.image ? environment.imgUrl  + this.productDetails.image : '';
+    return this.productDetails?.image ? environment.imgUrl + this.productDetails.image : '';
   }
+
+  getStars(rate: number) {
+  return Array(rate).fill(0);
+}
 
   constructor(
     private route: ActivatedRoute,
     private productService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -64,15 +68,6 @@ export class ProductDetailsComponent {
 
   onFileSelected(event: any) {
     const files = event.target.files;
-    if (files) {
-      // this.imageFiles = Array.from(files).filter((file: any) => {
-      //   if (file.size > 2 * 1024 * 1024) {
-      //     this.errorMessage = `${file.name} is larger than 2MB`;
-      //     return false;
-      //   }
-      //   return true;
-      // });
-    }
   }
 
   addImages() {
@@ -83,18 +78,7 @@ export class ProductDetailsComponent {
       formData.append('files[]', file);
     });
 
-    // this.productService.addProductImages(this.id, formData).subscribe({
-    //   next: (res: any) => {
-    //     this.successMessage = 'Images added successfully!';
-    //     this.additionalImages = [...this.additionalImages, ...(res.data.files || res.data)];
-    //     this.imageFiles = [];
-    //     setTimeout(() => this.successMessage = '', 4000);
-    //   },
-    //   error: (err) => {
-    //     this.errorMessage = err.error?.message || 'Failed to upload images';
-    //     setTimeout(() => this.errorMessage = '', 5000);
-    //   }
-    // });
+
   }
 
   openImageModal(url: string) {
@@ -102,24 +86,9 @@ export class ProductDetailsComponent {
     this.imagePreviewModal.show();
   }
 
-  // confirmDeleteImage(id?: number) {
-  //   this.imageToDelete = id || null;
-  //   this.deleteImageModal.show();
-  // }
+
 
   confirmDeleteImage() {
-    // if (!this.imageToDelete) return;
 
-    // this.productService.deleteProductImage(this.id, this.imageToDelete).subscribe({
-    //   next: () => {
-    //     this.additionalImages = this.additionalImages.filter(img => img.id !== this.imageToDelete);
-    //     this.successMessage = 'Image deleted successfully';
-    //     this.deleteImageModal.hide();
-    //     this.imageToDelete = null;
-    //   },
-    //   error: () => {
-    //     this.errorMessage = 'Failed to delete image';
-    //   }
-    // });
   }
 }
