@@ -18,16 +18,27 @@ export class LanguageService {
     this.currentLanguageSubject.next(language);
     
     const htmlElement = document.documentElement;
+    const bodyElement = document.body;
+    
     if (language === 'ar') {
       htmlElement.setAttribute('dir', 'rtl');
       htmlElement.setAttribute('lang', 'ar');
+      bodyElement.classList.add('rtl');
+      bodyElement.classList.remove('ltr');
     } else {
       htmlElement.setAttribute('dir', 'ltr');
       htmlElement.setAttribute('lang', 'en');
+      bodyElement.classList.add('ltr');
+      bodyElement.classList.remove('rtl');
     }
     
     // حفظ اللغة في localStorage
     localStorage.setItem('selectedLanguage', language);
+    
+    // Force re-render of components that might need it
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
   }
 
   getCurrentLanguage(): string {

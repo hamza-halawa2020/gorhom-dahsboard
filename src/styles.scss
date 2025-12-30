@@ -178,76 +178,414 @@
 //   }
 // }
 
-/* RTL Support for Arabic */
+/* RTL Support for Arabic - Simple and Safe */
 [dir="rtl"] {
+  direction: rtl;
   text-align: right;
   
-  .navbar-nav {
-    margin-left: 0;
-    margin-right: auto;
-  }
+  /* Text alignment fixes */
+  .text-start { text-align: right !important; }
+  .text-end { text-align: left !important; }
   
+  /* Float fixes */
+  .float-start { float: right !important; }
+  .float-end { float: left !important; }
+  
+  /* Margin fixes - only essential ones */
+  .ms-1 { margin-right: 0.25rem !important; margin-left: 0 !important; }
+  .ms-2 { margin-right: 0.5rem !important; margin-left: 0 !important; }
+  .ms-3 { margin-right: 1rem !important; margin-left: 0 !important; }
+  .ms-auto { margin-right: auto !important; margin-left: 0 !important; }
+  
+  .me-1 { margin-left: 0.25rem !important; margin-right: 0 !important; }
+  .me-2 { margin-left: 0.5rem !important; margin-right: 0 !important; }
+  .me-3 { margin-left: 1rem !important; margin-right: 0 !important; }
+  .me-auto { margin-left: auto !important; margin-right: 0 !important; }
+  
+  /* Dropdown fixes */
   .dropdown-menu {
-    left: auto;
-    right: 0;
+    right: 0 !important;
+    left: auto !important;
+    text-align: right;
   }
   
-  .text-left {
-    text-align: right !important;
+  .dropdown-menu-end {
+    right: auto !important;
+    left: 0 !important;
   }
   
-  .text-right {
-    text-align: left !important;
+  /* Form fixes */
+  .form-control,
+  .form-select,
+  .form-label {
+    text-align: right;
   }
   
-  .float-left {
-    float: right !important;
+  /* Table fixes */
+  .table th,
+  .table td {
+    text-align: right;
   }
   
-  .float-right {
-    float: left !important;
+  .table th:last-child,
+  .table td:last-child {
+    text-align: center; /* Actions column */
   }
   
-  .ml-auto {
-    margin-left: 0 !important;
-    margin-right: auto !important;
+  /* Card fixes */
+  .card-header,
+  .card-body,
+  .card-footer {
+    text-align: right;
   }
   
-  .mr-auto {
-    margin-right: 0 !important;
-    margin-left: auto !important;
+  /* Modal fixes */
+  .modal-header,
+  .modal-body {
+    text-align: right;
   }
   
-  .pl-0 { padding-left: 0 !important; padding-right: 0 !important; }
-  .pl-1 { padding-left: 0 !important; padding-right: 0.25rem !important; }
-  .pl-2 { padding-left: 0 !important; padding-right: 0.5rem !important; }
-  .pl-3 { padding-left: 0 !important; padding-right: 1rem !important; }
-  .pl-4 { padding-left: 0 !important; padding-right: 1.5rem !important; }
-  .pl-5 { padding-left: 0 !important; padding-right: 3rem !important; }
-  
-  .pr-0 { padding-right: 0 !important; padding-left: 0 !important; }
-  .pr-1 { padding-right: 0 !important; padding-left: 0.25rem !important; }
-  .pr-2 { padding-right: 0 !important; padding-left: 0.5rem !important; }
-  .pr-3 { padding-right: 0 !important; padding-left: 1rem !important; }
-  .pr-4 { padding-right: 0 !important; padding-left: 1.5rem !important; }
-  .pr-5 { padding-right: 0 !important; padding-left: 3rem !important; }
-  
-  .border-left {
-    border-left: none !important;
-    border-right: 1px solid #dee2e6 !important;
+  .modal-footer {
+    justify-content: flex-start;
   }
   
-  .border-right {
-    border-right: none !important;
-    border-left: 1px solid #dee2e6 !important;
+  /* Alert fixes */
+  .alert {
+    text-align: right;
   }
+  
+  /* Breadcrumb fixes */
+  .breadcrumb {
+    text-align: right;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    float: right;
+    padding-left: 0;
+    padding-right: 0.5rem;
+    content: "/";
+  }
+  
+  /* Navbar menu fixes */
+  .navbar-nav .nav-link {
+    text-align: right;
+  }
+  
+  .menu-title {
+    text-align: right;
+  }
+  
+  /* Icon fixes - only flip arrows */
+  .ri-arrow-left-line { transform: scaleX(-1); }
+  .ri-arrow-right-line { transform: scaleX(-1); }
+  .ri-chevron-left-line { transform: scaleX(-1); }
+  .ri-chevron-right-line { transform: scaleX(-1); }
+  
+  /* Flexbox fixes */
+  .justify-content-start { justify-content: flex-end !important; }
+  .justify-content-end { justify-content: flex-start !important; }
 }
 
-/* Arabic Font Support */
+/* Arabic Font Support - Enhanced */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Arial Unicode MS', sans-serif;
 }
 
 [dir="rtl"] body {
-  font-family: 'Segoe UI', 'Arial Unicode MS', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Cairo', 'Segoe UI', 'Arial Unicode MS', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Import Cairo font for better Arabic support */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
+
+/* Additional RTL fixes for layout - Safe and Mobile-Friendly */
+[dir="rtl"] {
+  /* Topbar RTL fixes */
+  .navbar-header {
+    .d-flex:first-child {
+      flex-direction: row-reverse;
+    }
+    
+    .d-flex:last-child {
+      flex-direction: row-reverse;
+    }
+  }
+  
+  /* Header items spacing fix */
+  .header-item {
+    margin-left: 0.5rem;
+    margin-right: 0;
+  }
+  
+  .header-item:first-child {
+    margin-left: 0;
+  }
+  
+  /* Hamburger menu positioning */
+  .vertical-menu-btn {
+    order: -1; /* Move to the right in RTL */
+  }
+  
+  /* Logo positioning */
+  .navbar-brand-box {
+    order: 1;
+  }
+  
+  /* Search form positioning */
+  .app-search {
+    order: 2;
+    margin-right: auto;
+    margin-left: 1rem;
+  }
+  
+  /* User dropdown and other header items */
+  .topbar-head-dropdown,
+  .topbar-user {
+    .dropdown-menu {
+      right: 0 !important;
+      left: auto !important;
+    }
+  }
+  
+  /* Sidebar menu text alignment */
+  .navbar-nav {
+    .nav-link {
+      text-align: right;
+      padding-right: 1rem;
+      padding-left: 0.5rem;
+    }
+    
+    .menu-title {
+      text-align: right;
+    }
+    
+    .nav-item {
+      text-align: right;
+    }
+  }
+  
+  /* Sidebar submenu positioning */
+  .navbar-nav .nav-item .collapse .nav-item .nav-link {
+    padding-right: 2rem;
+  }
+  
+  /* Footer text alignment */
+  .footer {
+    .col-sm-6:first-child {
+      text-align: right;
+    }
+    
+    .col-sm-6:last-child .text-sm-end {
+      text-align: left !important;
+    }
+  }
+  
+  /* Breadcrumb RTL fixes */
+  .breadcrumb {
+    .breadcrumb-item {
+      text-align: right;
+    }
+  }
+  
+  /* Card header alignment */
+  .card-header {
+    .d-flex {
+      flex-direction: row-reverse;
+    }
+    
+    h4, h5, h6 {
+      text-align: right;
+    }
+  }
+  
+  /* Button groups RTL */
+  .btn-group {
+    flex-direction: row-reverse;
+  }
+  
+  /* Input groups RTL */
+  .input-group {
+    flex-direction: row-reverse;
+  }
+  
+  .input-group .form-control:not(:last-child) {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  
+  .input-group .form-control:not(:first-child) {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  /* Preserve mobile functionality - DO NOT CHANGE THESE */
+  @media (max-width: 991.98px) {
+    .main-content {
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+    }
+    
+    .vertical-menu-btn {
+      position: relative !important;
+      order: unset !important;
+    }
+    
+    .navbar-header .d-flex {
+      flex-direction: row !important;
+    }
+  }
+  
+  /* Fix for table actions */
+  .table-responsive {
+    direction: ltr;
+  }
+  
+  .table-responsive .table {
+    direction: rtl;
+  }
+  
+  /* Fix for form controls in RTL */
+  .form-control:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  
+  /* Fix for select2 or similar dropdowns */
+  .select2-container--default .select2-selection--single {
+    text-align: right;
+  }
+  
+  /* Fix for pagination */
+  .page-item:first-child .page-link {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  .page-item:last-child .page-link {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  
+  /* Fix for breadcrumb */
+  .breadcrumb {
+    direction: rtl;
+  }
+  
+  /* Fix for alerts */
+  .alert-dismissible .btn-close {
+    left: 0;
+    right: auto;
+  }
+  
+  /* Fix for progress bars */
+  .progress-bar {
+    direction: ltr;
+  }
+  
+  /* Fix for carousel controls */
+  .carousel-control-prev {
+    right: 0;
+    left: auto;
+  }
+  
+  .carousel-control-next {
+    left: 0;
+    right: auto;
+  }
+  
+  /* Fix for offcanvas */
+  .offcanvas-start {
+    right: 0;
+    left: auto;
+    border-left: 1px solid rgba(0, 0, 0, 0.2);
+    border-right: none;
+  }
+  
+  .offcanvas-end {
+    left: 0;
+    right: auto;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+    border-left: none;
+  }
+  
+  /* Fix for tooltips */
+  .tooltip {
+    direction: ltr;
+  }
+  
+  /* Fix for popovers */
+  .popover {
+    direction: ltr;
+  }
+  
+  /* Fix for list groups */
+  .list-group-horizontal > .list-group-item:first-child {
+    border-bottom-right-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+  
+  .list-group-horizontal > .list-group-item:last-child {
+    border-bottom-left-radius: 0.375rem;
+    border-top-left-radius: 0.375rem;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+/* Fix for specific components that might break in RTL */
+[dir="rtl"] {
+  /* Fix for ngx-bootstrap components */
+  .bs-datepicker {
+    direction: ltr;
+  }
+  
+  .bs-timepicker {
+    direction: ltr;
+  }
+  
+  /* Fix for angular material components */
+  .mat-form-field {
+    direction: ltr;
+  }
+  
+  .mat-select {
+    direction: ltr;
+  }
+  
+  /* Fix for custom components */
+  .language-switcher {
+    direction: ltr;
+  }
+  
+  /* Fix for icons that should not flip */
+  .ri-arrow-left-line,
+  .ri-arrow-right-line,
+  .ri-chevron-left-line,
+  .ri-chevron-right-line {
+    transform: scaleX(-1);
+  }
+}
+
+/* Smooth transitions for RTL/LTR switching */
+* {
+  transition: margin 0.3s ease, padding 0.3s ease;
+}
+
+/* Ensure proper text rendering for Arabic */
+[dir="rtl"] {
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
