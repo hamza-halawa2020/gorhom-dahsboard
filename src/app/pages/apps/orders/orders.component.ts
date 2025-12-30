@@ -24,9 +24,9 @@ export class OrdersComponent {
 
   // Status options
   statusOptions = [
-    { value: 'pending', label: 'Pending', class: 'bg-warning' },
-    { value: 'completed', label: 'Completed', class: 'bg-success' },
-    { value: 'cancelled', label: 'Cancelled', class: 'bg-danger' }
+    { value: 'pending', label: 'ORDERS.STATUS_PENDING', class: 'bg-warning' },
+    { value: 'completed', label: 'ORDERS.STATUS_COMPLETED', class: 'bg-success' },
+    { value: 'cancelled', label: 'ORDERS.STATUS_CANCELLED', class: 'bg-danger' }
   ];
 
   constructor(private ordersService: OrdersService) {}
@@ -44,10 +44,10 @@ export class OrdersComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'ORDERS.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load orders';
+          this.errorMessage = 'ORDERS.FAILED_TO_LOAD_ORDERS';
         }
       }
     });
@@ -63,7 +63,7 @@ export class OrdersComponent {
         this.orderDetailsModal.show();
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load order details';
+        this.errorMessage = 'ORDERS.FAILED_TO_LOAD_ORDER_DETAILS';
       }
     });
   }
@@ -79,13 +79,13 @@ export class OrdersComponent {
 
     this.ordersService.updateStatus(this.selectedOrderId, this.newStatus).subscribe({
       next: () => {
-        this.successMessage = 'Order status updated successfully';
+        this.successMessage = 'ORDERS.ORDER_STATUS_UPDATED';
         setTimeout(() => this.successMessage = '', 4000);
         this.statusModal.hide();
         this.loadOrders();
       },
       error: (err) => {
-        this.errorMessage = 'Failed to update status';
+        this.errorMessage = 'ORDERS.FAILED_TO_UPDATE_STATUS';
       }
     });
   }
@@ -99,11 +99,11 @@ export class OrdersComponent {
         link.download = 'pending-orders.xlsx';
         link.click();
         window.URL.revokeObjectURL(blobUrl);
-        this.successMessage = 'File downloaded successfully!';
+        this.successMessage = 'ORDERS.FILE_DOWNLOADED_SUCCESSFULLY';
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (err) => {
-        this.errorMessage = 'Failed to export orders';
+        this.errorMessage = 'ORDERS.FAILED_TO_EXPORT_ORDERS';
       }
     });
   }
@@ -124,10 +124,19 @@ export class OrdersComponent {
 
   getPaymentMethodLabel(method: string): string {
     switch (method) {
-      case 'cash_on_delivery': return 'Cash on Delivery';
-      case 'visa': return 'Visa';
-      case 'vodafone_cash': return 'Vodafone Cash';
+      case 'cash_on_delivery': return 'ORDERS.PAYMENT_CASH_ON_DELIVERY';
+      case 'visa': return 'ORDERS.PAYMENT_VISA';
+      case 'vodafone_cash': return 'ORDERS.PAYMENT_VODAFONE_CASH';
       default: return method;
+    }
+  }
+
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'pending': return 'ORDERS.STATUS_PENDING';
+      case 'completed': return 'ORDERS.STATUS_COMPLETED';
+      case 'cancelled': return 'ORDERS.STATUS_CANCELLED';
+      default: return status;
     }
   }
 }
