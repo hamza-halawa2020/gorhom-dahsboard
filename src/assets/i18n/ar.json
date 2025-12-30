@@ -24,7 +24,8 @@
         "ADDRESS": "إدارة العناوين",
         "COUNTRIES": "البلدان",
         "CITIES": "المدن",
-        "SHIPMENTS": "الشحنات"
+        "SHIPMENTS": "الشحنات",
+        "REVIEWS": "المراجعات"
       }
     }
   },
@@ -37,7 +38,6 @@
     "DELETE": "حذف",
     "EDIT": "تعديل",
     "ADD": "إضافة",
-    "SEARCH": "بحث",
     "LOADING": "جاري التحميل...",
     "NO_DATA": "لا توجد بيانات",
     "WELCOME_BACK": "مرحباً بعودتك",
@@ -60,7 +60,19 @@
     "ACTIONS": "الإجراءات",
     "STATUS": "الحالة",
     "ACTIVE": "نشط",
-    "INACTIVE": "غير نشط"
+    "INACTIVE": "غير نشط",
+    "LIGHT_MODE": "الوضع الفاتح",
+    "DARK_MODE": "الوضع المظلم",
+    "FULLSCREEN": "ملء الشاشة",
+    "EXIT_FULLSCREEN": "خروج من ملء الشاشة",
+    "GORHOM": "جورهوم",
+    "DESIGNED_DEVELOPED_BY": "تم التصميم والتطوير بواسطة",
+    "MENU_TOGGLE": "تبديل القائمة",
+    "SEARCH": "بحث",
+    "NOTIFICATIONS": "الإشعارات",
+    "NO_NOTIFICATIONS": "لا توجد إشعارات",
+    "VIEW_ALL": "عرض الكل",
+    "MARK_ALL_READ": "تحديد الكل كمقروء"
   },
   "PRODUCTS": {
     "TITLE": "المنتجات",

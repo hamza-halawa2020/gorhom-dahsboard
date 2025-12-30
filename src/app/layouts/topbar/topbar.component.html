@@ -71,21 +71,20 @@
               href="javascript:void(0);"
               class="dropdown-item"
               (click)="changeMode('light')"
-              ><i class="bi bi-sun align-middle me-2"></i> Default (light
-              mode)</a
+              ><i class="bi bi-sun align-middle me-2"></i> {{ 'COMMON.LIGHT_MODE' | translate }}</a
             >
             <a
               href="javascript:void(0);"
               class="dropdown-item"
               (click)="changeMode('dark')"
-              ><i class="bi bi-moon align-middle me-2"></i> Dark</a
+              ><i class="bi bi-moon align-middle me-2"></i> {{ 'COMMON.DARK_MODE' | translate }}</a
             >
           </div>
         </div>
 
         <!-- Language Switcher -->
         <div class="ms-1 header-item">
-          <app-language-switcher></app-language-switcher>
+          <!-- <app-language-switcher></app-language-switcher> -->
         </div>
 
         <div
