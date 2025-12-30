@@ -35,7 +35,7 @@ export function createTranslateLoader(http: HttpClient): any {
   declarations: [AppComponent],
   imports: [
     TranslateModule.forRoot({
-      defaultLanguage: 'en',
+      defaultLanguage: 'ar',
       loader: {
         provide: TranslateLoader,
         useFactory: createTranslateLoader,

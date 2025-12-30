@@ -3,7 +3,7 @@ import { MenuItem } from './menu.model';
 export const MENU: MenuItem[] = [
   {
     id: 3,
-    label: 'E-commerce',
+    label: 'MENUITEMS.APPS.TEXT',
     isTitle: true,
   },
   {

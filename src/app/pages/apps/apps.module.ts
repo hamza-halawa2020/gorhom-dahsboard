@@ -4,6 +4,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTableModule } from '@angular/material/table';
+
+// Language
+import { TranslateModule } from '@ngx-translate/core';
+
+// Bootstrap modules
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
@@ -12,6 +17,8 @@ import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { ProgressbarModule } from 'ngx-bootstrap/progressbar';
 import { AlertModule } from 'ngx-bootstrap/alert';
+import { RatingModule } from 'ngx-bootstrap/rating';
+// Routing and components
 import { AppsRoutingModule } from './apps-routing.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { UserComponent } from './user/user.component';
@@ -21,7 +28,6 @@ import { CountriesComponent } from './countries/countries.component';
 import { ClientsComponent } from './clients/clients.component';
 import { ShipmentsComponent } from './shipments/shipments.component';
 import { CouponsComponent } from './coupons/coupons.component';
-import { RatingModule } from 'ngx-bootstrap/rating';
 import { ProductsComponent } from './products/products.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
 import { ProductReviewComponent } from './product-review/product-review.component';
@@ -51,8 +57,9 @@ import { JwtInterceptor } from 'src/app/core/helpers/jwt.interceptor';
     CommonModule,
     AppsRoutingModule,
     FormsModule,
-    RatingModule,
     ReactiveFormsModule,
+    TranslateModule,
+    RatingModule,
     ModalModule.forRoot(),
     TabsModule.forRoot(),
     TooltipModule.forRoot(),

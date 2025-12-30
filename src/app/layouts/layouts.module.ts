@@ -21,6 +21,9 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { VerticalComponent } from './vertical/vertical.component';
 import { FooterComponent } from './footer/footer.component';
 
+// Shared Module
+import { SharedModule } from '../shared/shared.module';
+
 @NgModule({
   declarations: [
     LayoutComponent,
@@ -39,6 +42,7 @@ import { FooterComponent } from './footer/footer.component';
     ModalModule.forRoot(),
     FormsModule,
     ReactiveFormsModule,
+    SharedModule,
   ],
 })
 export class LayoutsModule {}

@@ -2,6 +2,9 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
+// Language
+import { TranslateModule } from '@ngx-translate/core';
+
 // Page Route
 import { AccountRoutingModule } from './account-routing.module';
 import { AuthModule } from './auth/auth.module';
@@ -17,6 +20,7 @@ import { LoginComponent } from './login/login.component';
     AuthModule,
     FormsModule,
     ReactiveFormsModule,
+    TranslateModule,
   ],
   providers: [],
 })
