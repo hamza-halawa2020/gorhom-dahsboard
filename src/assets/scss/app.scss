@@ -109,9 +109,9 @@ File: Main Css File
 // Angular Custom
 @import "custom";
 
-// Rtl
-// @import "rtl/components/components";
-// @import "rtl/plugins/plugins";
-// @import "rtl/structure/structure";
-// @import "rtl/apps/apps";
-// @import "rtl/pages/pages";
+// RTL bundles (override the base styles whenever dir="rtl")
+@import "rtl/components/components";
+@import "rtl/plugins/plugins";
+@import "rtl/structure/structure";
+@import "rtl/apps/apps";
+@import "rtl/pages/pages";

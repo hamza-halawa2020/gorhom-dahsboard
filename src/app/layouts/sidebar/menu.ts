@@ -35,13 +35,13 @@ export const MENU: MenuItem[] = [
     link: '/apps/orders',
     parentId: 4,
   },
-  {
-    id: 8,
-    label: 'MENUITEMS.APPS.LIST.PAYMENTS',
-    icon: 'ti ti-credit-card',
-    link: '/apps/payments',
-    parentId: 4,
-  },
+  // {
+  //   id: 8,
+  //   label: 'MENUITEMS.APPS.LIST.PAYMENTS',
+  //   icon: 'ti ti-credit-card',
+  //   link: '/apps/payments',
+  //   parentId: 4,
+  // },
   {
     id: 9,
     label: 'MENUITEMS.APPS.LIST.COUPONS',
