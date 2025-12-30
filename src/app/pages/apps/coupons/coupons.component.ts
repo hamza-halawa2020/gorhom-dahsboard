@@ -40,13 +40,13 @@ export class CouponsComponent {
 
   // Type options
   typeOptions = [
-    { value: 'fixed', label: 'Fixed Amount' },
-    { value: 'percentage', label: 'Percentage' }
+    { value: 'fixed', label: 'COUPONS.TYPE_FIXED' },
+    { value: 'percentage', label: 'COUPONS.TYPE_PERCENTAGE' }
   ];
 
   // Automatic type options
   automaticTypeOptions = [
-    { value: 'first_order', label: 'First Order' }
+    { value: 'first_order', label: 'COUPONS.AUTO_TYPE_FIRST_ORDER' }
   ];
 
   constructor(private couponsService: CouponsService) {}
@@ -64,10 +64,10 @@ export class CouponsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'COUPONS.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load coupons';
+          this.errorMessage = 'COUPONS.FAILED_TO_LOAD_COUPONS';
         }
       }
     });
@@ -78,15 +78,15 @@ export class CouponsComponent {
 
   saveCoupon() {
     if (!this.form.code) {
-      this.errorMessage = 'Code is required';
+      this.errorMessage = 'COUPONS.CODE_REQUIRED';
       return;
     }
     if (!this.form.type) {
-      this.errorMessage = 'Type is required';
+      this.errorMessage = 'COUPONS.TYPE_REQUIRED';
       return;
     }
     if (!this.form.value || this.form.value <= 0) {
-      this.errorMessage = 'Value must be greater than 0';
+      this.errorMessage = 'COUPONS.VALUE_GREATER_THAN_ZERO';
       return;
     }
 
@@ -114,17 +114,17 @@ export class CouponsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.couponsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('Coupon updated successfully'),
+        next: () => this.afterSave('COUPONS.COUPON_UPDATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Update failed';
+          this.errorMessage = err.error?.message || 'COUPONS.UPDATE_FAILED';
           this.isUploading = false;
         }
       });
     } else {
       this.couponsService.store(data).subscribe({
-        next: () => this.afterSave('Coupon created successfully'),
+        next: () => this.afterSave('COUPONS.COUPON_CREATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Create failed';
+          this.errorMessage = err.error?.message || 'COUPONS.CREATE_FAILED';
           this.isUploading = false;
         }
       });
@@ -174,11 +174,11 @@ export class CouponsComponent {
     if (!this.couponToDelete) return;
     this.couponsService.delete(this.couponToDelete).subscribe({
       next: () => {
-        this.successMessage = 'Coupon deleted';
+        this.successMessage = 'COUPONS.COUPON_DELETED_SUCCESS';
         this.loadCoupons();
       },
       error: (err) => {
-        this.errorMessage = 'Delete failed';
+        this.errorMessage = 'COUPONS.DELETE_FAILED';
       }
     });
     this.deleteModal.hide();
@@ -210,6 +210,14 @@ export class CouponsComponent {
 
   getStatusBadgeClass(isActive: boolean): string {
     return isActive ? 'bg-success' : 'bg-danger';
+  }
+
+  getTypeText(type: string): string {
+    switch (type) {
+      case 'fixed': return 'COUPONS.TYPE_FIXED';
+      case 'percentage': return 'COUPONS.TYPE_PERCENTAGE';
+      default: return type;
+    }
   }
 
   isExpired(expiresAt: string): boolean {
