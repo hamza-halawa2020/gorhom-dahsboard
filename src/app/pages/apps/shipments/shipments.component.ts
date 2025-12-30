@@ -47,10 +47,10 @@ export class ShipmentsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'SHIPMENTS.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load shipments';
+          this.errorMessage = 'SHIPMENTS.FAILED_TO_LOAD_SHIPMENTS';
         }
       }
     });
@@ -62,7 +62,7 @@ export class ShipmentsComponent {
         this.countries = res.data || res;
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load countries';
+        this.errorMessage = 'SHIPMENTS.FAILED_TO_LOAD_COUNTRIES';
       }
     });
   }
@@ -75,7 +75,7 @@ export class ShipmentsComponent {
           this.form.city_id = ''; // Reset city selection
         },
         error: (err) => {
-          this.errorMessage = 'Failed to load cities';
+          this.errorMessage = 'SHIPMENTS.FAILED_TO_LOAD_CITIES';
           this.cities = [];
         }
       });
@@ -90,15 +90,15 @@ export class ShipmentsComponent {
 
   saveShipment() {
     if (!this.form.country_id) {
-      this.errorMessage = 'Please select a country';
+      this.errorMessage = 'SHIPMENTS.PLEASE_SELECT_COUNTRY';
       return;
     }
     if (!this.form.city_id) {
-      this.errorMessage = 'Please select a city';
+      this.errorMessage = 'SHIPMENTS.PLEASE_SELECT_CITY';
       return;
     }
     if (!this.form.cost || this.form.cost <= 0) {
-      this.errorMessage = 'Please enter a valid cost';
+      this.errorMessage = 'SHIPMENTS.PLEASE_ENTER_VALID_COST';
       return;
     }
 
@@ -114,17 +114,17 @@ export class ShipmentsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.shipmentsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('Shipment updated successfully'),
+        next: () => this.afterSave('SHIPMENTS.SHIPMENT_UPDATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Update failed';
+          this.errorMessage = err.error?.message || 'SHIPMENTS.UPDATE_FAILED';
           this.isUploading = false;
         }
       });
     } else {
       this.shipmentsService.store(data).subscribe({
-        next: () => this.afterSave('Shipment created successfully'),
+        next: () => this.afterSave('SHIPMENTS.SHIPMENT_CREATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Create failed';
+          this.errorMessage = err.error?.message || 'SHIPMENTS.CREATE_FAILED';
           this.isUploading = false;
         }
       });
@@ -175,11 +175,11 @@ export class ShipmentsComponent {
     if (!this.shipmentToDelete) return;
     this.shipmentsService.delete(this.shipmentToDelete).subscribe({
       next: () => {
-        this.successMessage = 'Shipment deleted';
+        this.successMessage = 'SHIPMENTS.SHIPMENT_DELETED_SUCCESS';
         this.loadShipments();
       },
       error: (err) => {
-        this.errorMessage = 'Delete failed';
+        this.errorMessage = 'SHIPMENTS.DELETE_FAILED';
       }
     });
     this.deleteModal.hide();

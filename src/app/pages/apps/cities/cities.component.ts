@@ -58,10 +58,10 @@ export class CitiesComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'CITIES.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load cities';
+          this.errorMessage = 'CITIES.FAILED_TO_LOAD_CITIES';
         }
       }
     });
@@ -73,7 +73,7 @@ export class CitiesComponent {
         this.countries = res.data || res;
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load countries';
+        this.errorMessage = 'CITIES.FAILED_TO_LOAD_COUNTRIES';
       }
     });
   }
@@ -84,12 +84,12 @@ export class CitiesComponent {
   saveCity() {
     for (const lang of this.selectedLangs) {
       if (!this.form.title?.[lang.code]) {
-        this.errorMessage = `Title (${lang.label}) is required`;
+        this.errorMessage = `CITIES.TITLE_REQUIRED`;
         return;
       }
     }
     if (!this.form.country_id) {
-      this.errorMessage = 'Please select a country';
+      this.errorMessage = 'CITIES.PLEASE_SELECT_COUNTRY';
       return;
     }
 
@@ -104,17 +104,17 @@ export class CitiesComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.citiesService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('City updated successfully'),
+        next: () => this.afterSave('CITIES.CITY_UPDATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Update failed';
+          this.errorMessage = err.error?.message || 'CITIES.UPDATE_FAILED';
           this.isUploading = false;
         }
       });
     } else {
       this.citiesService.store(data).subscribe({
-        next: () => this.afterSave('City created successfully'),
+        next: () => this.afterSave('CITIES.CITY_CREATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Create failed';
+          this.errorMessage = err.error?.message || 'CITIES.CREATE_FAILED';
           this.isUploading = false;
         }
       });
@@ -184,10 +184,10 @@ export class CitiesComponent {
       error: (err) => {
         console.error('Failed to load city details:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'CITIES.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load city details: ' + (err.error?.message || err.message);
+          this.errorMessage = 'CITIES.FAILED_TO_LOAD_CITY_DETAILS';
         }
       }
     });
@@ -202,11 +202,11 @@ export class CitiesComponent {
     if (!this.cityToDelete) return;
     this.citiesService.delete(this.cityToDelete).subscribe({
       next: () => {
-        this.successMessage = 'City deleted';
+        this.successMessage = 'CITIES.CITY_DELETED_SUCCESS';
         this.loadCities();
       },
       error: (err) => {
-        this.errorMessage = 'Delete failed';
+        this.errorMessage = 'CITIES.DELETE_FAILED';
       }
     });
     this.deleteModal.hide();
@@ -244,7 +244,7 @@ export class CitiesComponent {
 
   removeLang(index: number) {
     if (this.selectedLangs.length <= 1) {
-      this.errorMessage = 'You must keep at least one language';
+      this.errorMessage = 'CITIES.KEEP_AT_LEAST_ONE_LANGUAGE';
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
