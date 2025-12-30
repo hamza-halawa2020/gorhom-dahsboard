@@ -61,10 +61,10 @@ export class ClientsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'CLIENTS.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load clients';
+          this.errorMessage = 'CLIENTS.FAILED_TO_LOAD_CLIENTS';
         }
       }
     });
@@ -86,11 +86,11 @@ export class ClientsComponent {
 
   saveClient() {
     if (!this.form.name) {
-      this.errorMessage = 'Name is required';
+      this.errorMessage = 'CLIENTS.NAME_REQUIRED';
       return;
     }
     if (!this.form.phone) {
-      this.errorMessage = 'Phone is required';
+      this.errorMessage = 'CLIENTS.PHONE_REQUIRED';
       return;
     }
 
@@ -107,17 +107,17 @@ export class ClientsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.clientsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('Client updated successfully'),
+        next: () => this.afterSave('CLIENTS.CLIENT_UPDATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Update failed';
+          this.errorMessage = err.error?.message || 'CLIENTS.UPDATE_FAILED';
           this.isUploading = false;
         }
       });
     } else {
       this.clientsService.store(data).subscribe({
-        next: () => this.afterSave('Client created successfully'),
+        next: () => this.afterSave('CLIENTS.CLIENT_CREATED_SUCCESS'),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Create failed';
+          this.errorMessage = err.error?.message || 'CLIENTS.CREATE_FAILED';
           this.isUploading = false;
         }
       });
@@ -158,14 +158,14 @@ export class ClientsComponent {
     if (!this.clientToDelete) return;
     this.clientsService.delete(this.clientToDelete).subscribe({
       next: () => {
-        this.successMessage = 'Client deleted';
+        this.successMessage = 'CLIENTS.CLIENT_DELETED_SUCCESS';
         this.loadClients();
       },
       error: (err) => {
         if (err.status === 400) {
-          this.errorMessage = 'Cannot delete client with existing orders';
+          this.errorMessage = 'CLIENTS.CANNOT_DELETE_CLIENT_WITH_ORDERS';
         } else {
-          this.errorMessage = 'Delete failed';
+          this.errorMessage = 'CLIENTS.DELETE_FAILED';
         }
       }
     });
@@ -179,7 +179,7 @@ export class ClientsComponent {
         this.statsModal.show();
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load statistics';
+        this.errorMessage = 'CLIENTS.FAILED_TO_LOAD_STATISTICS';
       }
     });
   }

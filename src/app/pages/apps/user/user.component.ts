@@ -54,12 +54,12 @@ export class UserComponent {
       error: (err) => {
         console.error('Load users error:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'USERS.SESSION_EXPIRED';
           setTimeout(() => {
             window.location.href = '/auth/login';
           }, 2000);
         } else {
-          this.errorMessage = 'Failed to load users: ' + (err.error?.message || err.message);
+          this.errorMessage = 'USERS.FAILED_TO_LOAD_USERS';
         }
       }
     });
@@ -94,19 +94,19 @@ export class UserComponent {
   saveUser() {
     // Validation
     if (!this.form.name) {
-      this.errorMessage = 'Name is required';
+      this.errorMessage = 'USERS.NAME_REQUIRED';
       return;
     }
     if (!this.form.email && !this.isEditMode) {
-      this.errorMessage = 'Email is required';
+      this.errorMessage = 'USERS.EMAIL_REQUIRED';
       return;
     }
     if (!this.form.password && !this.isEditMode) {
-      this.errorMessage = 'Password is required';
+      this.errorMessage = 'USERS.PASSWORD_REQUIRED';
       return;
     }
     if (this.form.password && this.form.password.length < 6) {
-      this.errorMessage = 'Password must be at least 6 characters';
+      this.errorMessage = 'USERS.PASSWORD_MIN_6';
       return;
     }
 
@@ -131,26 +131,26 @@ export class UserComponent {
     if (this.isEditMode) {
       formData.append('_method', 'PUT');
       this.usersService.updateUser(this.form.id, formData).subscribe({
-        next: () => this.afterSave('User updated successfully'),
+        next: () => this.afterSave('USERS.USER_UPDATED_SUCCESS'),
         error: (err) => {
           console.error('Update error', err);
           if (err.status === 401) {
-            this.errorMessage = 'Session expired. Please login again.';
+            this.errorMessage = 'USERS.SESSION_EXPIRED';
           } else {
-            this.errorMessage = err.error?.message || 'Update failed';
+            this.errorMessage = err.error?.message || 'USERS.UPDATE_FAILED';
           }
           this.isUploading = false;
         }
       });
     } else {
       this.usersService.store(formData).subscribe({
-        next: () => this.afterSave('User created successfully'),
+        next: () => this.afterSave('USERS.USER_CREATED_SUCCESS'),
         error: (err) => {
           console.error('Create error', err);
           if (err.status === 401) {
-            this.errorMessage = 'Session expired. Please login again.';
+            this.errorMessage = 'USERS.SESSION_EXPIRED';
           } else {
-            this.errorMessage = err.error?.message || 'Create failed';
+            this.errorMessage = err.error?.message || 'USERS.CREATE_FAILED';
           }
           this.isUploading = false;
         }
@@ -207,10 +207,10 @@ export class UserComponent {
         this.imagePreview = null;
         this.userModal.show();
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'USERS.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load user details: ' + (err.error?.message || err.message);
+          this.errorMessage = 'USERS.FAILED_TO_LOAD_USER_DETAILS';
         }
       }
     });
@@ -225,14 +225,14 @@ export class UserComponent {
     if (!this.userToDelete) return;
     this.usersService.delete(this.userToDelete).subscribe({
       next: () => {
-        this.successMessage = 'User deleted';
+        this.successMessage = 'USERS.USER_DELETED_SUCCESS';
         this.loadUsers();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'USERS.SESSION_EXPIRED';
         } else {
-          this.errorMessage = 'Delete failed: ' + (err.error?.message || err.message);
+          this.errorMessage = 'USERS.DELETE_FAILED';
         }
       }
     });
@@ -262,18 +262,26 @@ export class UserComponent {
     }).subscribe({
       next: () => {
         user.type = updatedType;
-        this.successMessage = 'User type updated successfully';
+        this.successMessage = 'USERS.USER_TYPE_UPDATED_SUCCESS';
         setTimeout(() => this.successMessage = '', 3000);
         this.loadUsers();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'USERS.SESSION_EXPIRED';
         } else {
-          this.errorMessage = 'Error updating user type: ' + (err.error?.message || err.message);
+          this.errorMessage = 'USERS.ERROR_UPDATING_USER_TYPE';
         }
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
+  }
+
+  getUserTypeText(type: string): string {
+    return type === 'admin' ? 'USERS.ADMIN' : 'USERS.USER';
+  }
+
+  getVerificationText(verified: boolean): string {
+    return verified ? 'USERS.VERIFIED' : 'USERS.NOT_VERIFIED';
   }
 }
