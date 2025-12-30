@@ -272,7 +272,14 @@
     "STATUS_PENDING": "في الانتظار",
     "STATUS_APPROVED": "موافق عليها",
     "STATUS_REJECTED": "مرفوضة",
-    "STATUS_SPAM": "رسائل مزعجة"
+    "STATUS_SPAM": "رسائل مزعجة",
+    "ENTER_REVIEWER_NAME": "أدخل اسم المراجع",
+    "SELECT_PRODUCT": "اختر المنتج",
+    "WRITE_REVIEW_HERE": "اكتب مراجعتك هنا...",
+    "SAVING": "جاري الحفظ...",
+    "DELETE_REVIEW_CONFIRM": "حذف المراجعة؟",
+    "DELETE_ACTION_CANNOT_UNDONE": "لا يمكن التراجع عن هذا الإجراء.",
+    "YES_DELETE": "نعم، احذف"
   },
   "TABLES": {
     "INDEX": "الرقم",

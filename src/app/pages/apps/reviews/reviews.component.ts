@@ -34,9 +34,9 @@ export class ReviewsComponent {
 
   // Status options
   statusOptions = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' }
+    { value: 'pending', label: 'REVIEWS.STATUS_PENDING' },
+    { value: 'approved', label: 'REVIEWS.STATUS_APPROVED' },
+    { value: 'rejected', label: 'REVIEWS.STATUS_REJECTED' }
   ];
 
   // Rating stars

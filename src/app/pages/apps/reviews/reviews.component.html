@@ -27,7 +27,7 @@
           <th>{{ 'TABLES.RATING' | translate }}</th>
           <th>{{ 'REVIEWS.REVIEW_CONTENT' | translate }}</th>
           <th>{{ 'TABLES.STATUS' | translate }}</th>
-          <th>{{ 'TABLES.CREATED_AT' | translate }}</th>
+          <th>{{ 'PRODUCTS.CREATED_AT' | translate }}</th>
           <th>{{ 'TABLES.ACTIONS' | translate }}</th>
         </tr>
       </thead>
@@ -36,7 +36,7 @@
           <td>{{ i + 1 }}</td>
           <td><span class="fw-medium">{{ review.name }}</span></td>
           <td>
-            <span class="badge bg-secondary">{{ review.product?.title || 'N/A' }}</span>
+            <span class="badge bg-secondary">{{ review.product?.title?.ar || review.product?.title?.en || review.product?.title || 'N/A' }}</span>
           </td>
           <td>
             <div class="d-flex align-items-center">
@@ -99,30 +99,30 @@
             <div class="col-md-6">
               <label class="form-label">{{ 'REVIEWS.CUSTOMER_NAME' | translate }} <span class="text-danger">*</span></label>
               <input type="text" class="form-control" [(ngModel)]="form.name" name="name" 
-                     placeholder="Enter reviewer name" required>
+                     [placeholder]="'REVIEWS.ENTER_REVIEWER_NAME' | translate" required>
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Product <span class="text-danger">*</span></label>
+              <label class="form-label">{{ 'PRODUCTS.TITLE' | translate }} <span class="text-danger">*</span></label>
               <select class="form-select" [(ngModel)]="form.product_id" name="product_id" required>
-                <option value="">Select Product</option>
+                <option value="">{{ 'REVIEWS.SELECT_PRODUCT' | translate }}</option>
                 <option *ngFor="let product of products" [value]="product.id">
-                  {{ product.title }}
+                  {{ product.title?.ar || product.title?.en || product.title }}
                 </option>
               </select>
             </div>
 
             <div class="col-12" *ngIf="isEditMode">
-              <label class="form-label">Status</label>
+              <label class="form-label">{{ 'REVIEWS.REVIEW_STATUS' | translate }}</label>
               <select class="form-select" [(ngModel)]="form.status" name="status">
                 <option *ngFor="let status of statusOptions" [value]="status.value">
-                  {{ status.label }}
+                  {{ status.label | translate }}
                 </option>
               </select>
             </div>
 
             <div class="col-12">
-              <label class="form-label">Rating <span class="text-danger">*</span></label>
+              <label class="form-label">{{ 'REVIEWS.REVIEW_RATING' | translate }} <span class="text-danger">*</span></label>
               <div class="d-flex gap-2 align-items-center">
                 <button type="button" class="btn btn-link p-0" 
                         *ngFor="let star of stars" 
@@ -134,20 +134,20 @@
             </div>
 
             <div class="col-12">
-              <label class="form-label">Review <span class="text-danger">*</span></label>
+              <label class="form-label">{{ 'REVIEWS.REVIEW_CONTENT' | translate }} <span class="text-danger">*</span></label>
               <textarea class="form-control" rows="5" [(ngModel)]="form.review" name="review" 
-                        placeholder="Write your review here..." required></textarea>
+                        [placeholder]="'REVIEWS.WRITE_REVIEW_HERE' | translate" required></textarea>
             </div>
           </div>
 
           <div class="hstack gap-3 justify-content-end mt-4">
-            <button type="button" class="btn btn-light" (click)="reviewModal.hide()" [disabled]="isUploading">Cancel</button>
+            <button type="button" class="btn btn-light" (click)="reviewModal.hide()" [disabled]="isUploading">{{ 'COMMON.CANCEL' | translate }}</button>
             <button type="button" class="btn btn-primary" (click)="saveReview()" [disabled]="isUploading">
               <span *ngIf="!isUploading">
-                <i class="ri-save-line me-1"></i> {{ isEditMode ? 'Update' : 'Create' }}
+                <i class="ri-save-line me-1"></i> {{ isEditMode ? ('COMMON.UPDATE' | translate) : ('COMMON.CREATE' | translate) }}
               </span>
               <span *ngIf="isUploading">
-                <span class="spinner-border spinner-border-sm me-2"></span> Saving...
+                <span class="spinner-border spinner-border-sm me-2"></span> {{ 'REVIEWS.SAVING' | translate }}...
               </span>
             </button>
           </div>
@@ -162,11 +162,11 @@
     <div class="modal-content">
       <div class="modal-body text-center py-5">
         <i class="ri-delete-bin-6-line text-danger" style="font-size: 4rem;"></i>
-        <h4 class="mt-3">Delete Review?</h4>
-        <p class="text-muted">This action cannot be undone.</p>
+        <h4 class="mt-3">{{ 'REVIEWS.DELETE_REVIEW_CONFIRM' | translate }}</h4>
+        <p class="text-muted">{{ 'REVIEWS.DELETE_ACTION_CANNOT_UNDONE' | translate }}</p>
         <div class="hstack gap-3 justify-content-center">
-          <button class="btn btn-light" (click)="deleteModal.hide()">Cancel</button>
-          <button class="btn btn-danger" (click)="deleteConfirmed()">Yes, Delete</button>
+          <button class="btn btn-light" (click)="deleteModal.hide()">{{ 'COMMON.CANCEL' | translate }}</button>
+          <button class="btn btn-danger" (click)="deleteConfirmed()">{{ 'REVIEWS.YES_DELETE' | translate }}</button>
         </div>
       </div>
     </div>
