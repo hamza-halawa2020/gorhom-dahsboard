@@ -36,7 +36,7 @@ export class LoginComponent {
   }
 
   extractErrorMessage(error: any): string {
-    let errorMessage = 'An error occurred';
+    let errorMessage = 'LOGIN.AN_ERROR_OCCURRED';
     if (error && error.error && error.error.errors) {
       errorMessage = Object.values(error.error.errors).flat().join(', ');
     }
@@ -56,19 +56,19 @@ export class LoginComponent {
             this.router.navigate(['/']);
           } else {
             console.error('No token found in response:', res);
-            this.errorMessage = 'Login succeeded but no token received';
+            this.errorMessage = 'LOGIN.LOGIN_SUCCESS_NO_TOKEN';
             setTimeout(() => (this.errorMessage = ''), 10000);
           }
         },
         error: (err) => {
           this.errorMessage =
-            'Login failed. Please try again. ' + this.extractErrorMessage(err);
+            'LOGIN.LOGIN_FAILED ' + this.extractErrorMessage(err);
           setTimeout(() => (this.errorMessage = ''), 10000);
         },
       });
     } else {
       this.errorMessage =
-        'Form is invalid. Please fill all the required fields.';
+        'LOGIN.FORM_INVALID';
       setTimeout(() => (this.errorMessage = ''), 10000);
     }
   }

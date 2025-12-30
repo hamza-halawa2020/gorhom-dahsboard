@@ -19,9 +19,9 @@
                 <div class="card mb-0 border-0 shadow-none mb-0">
                   <div class="card-body p-sm-5 m-lg-4">
                     <div class="text-center mt-5">
-                      <h5 class="fs-3xl">{{ 'COMMON.WELCOME_BACK' | translate }}</h5>
+                      <h5 class="fs-3xl">{{ 'LOGIN.WELCOME_BACK' | translate }}</h5>
                       <p class="text-muted">
-                        {{ 'COMMON.SIGN_IN_CONTINUE' | translate }}
+                        {{ 'LOGIN.SIGN_IN_CONTINUE' | translate }}
                       </p>
                     </div>
                     <div class="p-2 mt-5">
@@ -44,7 +44,7 @@
                                 'is-invalid':
                                   submitted && f['email'].errors
                               }"
-                              placeholder="Enter email or phone"
+                              [placeholder]="'LOGIN.ENTER_EMAIL_OR_PHONE' | translate"
                             />
                           </div>
                         </div>
@@ -65,7 +65,7 @@
                                   'is-invalid':
                                     submitted && f['password'].errors
                                 }"
-                                placeholder="Enter password"
+                                [placeholder]="'LOGIN.ENTER_PASSWORD' | translate"
                                 id="password-input"
                               />
                             </div>
@@ -93,7 +93,7 @@
                             class="btn btn-primary w-100"
                             [disabled]="loginForm.invalid"
                             type="submit"
-                            value="Login"
+                            [value]="'LOGIN.LOGIN_BUTTON' | translate"
                             class="btn mt-3"
                           />
                         </div>
@@ -113,9 +113,9 @@
                     class="card-body py-5 d-flex justify-content-between flex-column"
                   >
                     <div class="text-center">
-                      <h5 class="text-white">Nice to see you again</h5>
+                      <h5 class="text-white">{{ 'LOGIN.NICE_TO_SEE_YOU' | translate }}</h5>
                       <p class="text-white opacity-75">
-                        Enter your details and start your journey with us.
+                        {{ 'LOGIN.ENTER_DETAILS_START_JOURNEY' | translate }}
                       </p>
                     </div>
                     <div
@@ -132,9 +132,8 @@
                     <div class="text-center">
                       <p class="text-white opacity-75 mb-0 mt-3">
                         &copy;
-                        {{ year }} Gorhom. Crafted with
-                        <i class="ti ti-heart-filled text-danger"></i> by
-                        Gorhom.
+                        {{ year }} {{ 'COMMON.GORHOM' | translate }}. {{ 'LOGIN.CRAFTED_WITH_LOVE' | translate }}
+                        <i class="ti ti-heart-filled text-danger"></i> {{ 'LOGIN.BY_GORHOM' | translate }}
                       </p>
                     </div>
                   </div>

@@ -739,5 +739,21 @@
     "KEEP_AT_LEAST_ONE_LANGUAGE": "يجب الاحتفاظ بلغة واحدة على الأقل",
     "LOADING": "جاري التحميل...",
     "SAVING": "جاري الحفظ..."
+  },
+  "LOGIN": {
+    "TITLE": "تسجيل الدخول",
+    "WELCOME_BACK": "مرحباً بعودتك",
+    "SIGN_IN_CONTINUE": "سجل دخولك للمتابعة إلى جورهوم",
+    "ENTER_EMAIL_OR_PHONE": "أدخل البريد الإلكتروني أو الهاتف",
+    "ENTER_PASSWORD": "أدخل كلمة المرور",
+    "LOGIN_BUTTON": "تسجيل الدخول",
+    "NICE_TO_SEE_YOU": "من الجميل رؤيتك مرة أخرى",
+    "ENTER_DETAILS_START_JOURNEY": "أدخل بياناتك وابدأ رحلتك معنا.",
+    "CRAFTED_WITH_LOVE": "صُنع بـ",
+    "BY_GORHOM": "بواسطة جورهوم.",
+    "LOGIN_FAILED": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+    "FORM_INVALID": "النموذج غير صحيح. يرجى ملء جميع الحقول المطلوبة.",
+    "LOGIN_SUCCESS_NO_TOKEN": "تم تسجيل الدخول بنجاح ولكن لم يتم استلام الرمز المميز",
+    "AN_ERROR_OCCURRED": "حدث خطأ"
   }
 }
