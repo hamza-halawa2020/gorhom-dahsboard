@@ -67,10 +67,10 @@ export class CategoriesComponent {
       error: (err) => {
         console.error('Load categories error:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load categories: ' + (err.error?.message || err.message);
+          this.errorMessage = 'CATEGORIES.FAILED_TO_LOAD_CATEGORIES';
         }
       }
     });
@@ -109,12 +109,12 @@ export class CategoriesComponent {
     // Ensure at least one name for selected languages
     for (const lang of this.selectedLangs) {
       if (!this.form.name?.[lang.code]) {
-        this.errorMessage = `Name (${lang.label}) is required`;
+        this.errorMessage = `CATEGORIES.NAME_REQUIRED`;
         return;
       }
     }
     if (!this.imageFile && !this.isEditMode) {
-      this.errorMessage = 'Image is required';
+      this.errorMessage = 'CATEGORIES.IMAGE_REQUIRED';
       return;
     }
 
@@ -137,28 +137,28 @@ export class CategoriesComponent {
     if (this.isEditMode) {
       fd.append('_method', 'PUT');
       this.categoriesService.update(this.form.id, fd).subscribe({
-        next: () => this.afterSave('Category updated successfully'),
+        next: () => this.afterSave('CATEGORIES.CATEGORY_UPDATED_SUCCESS'),
         error: (err) => {
           console.error('Update error', err);
           if (err.status === 401) {
-            this.errorMessage = 'Session expired. Please login again.';
+            this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
             setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
-            this.errorMessage = err.error?.message || 'Update failed';
+            this.errorMessage = err.error?.message || 'CATEGORIES.UPDATE_FAILED';
           }
           this.isUploading = false;
         }
       });
     } else {
       this.categoriesService.store(fd).subscribe({
-        next: () => this.afterSave('Category created successfully'),
+        next: () => this.afterSave('CATEGORIES.CATEGORY_CREATED_SUCCESS'),
         error: (err) => {
           console.error('Create error', err);
           if (err.status === 401) {
-            this.errorMessage = 'Session expired. Please login again.';
+            this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
             setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
-            this.errorMessage = err.error?.message || 'Create failed';
+            this.errorMessage = err.error?.message || 'CATEGORIES.CREATE_FAILED';
           }
           this.isUploading = false;
         }
@@ -233,10 +233,10 @@ export class CategoriesComponent {
       error: (err) => {
         console.error('Failed to load category details:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load category details: ' + (err.error?.message || err.message);
+          this.errorMessage = 'CATEGORIES.FAILED_TO_LOAD_CATEGORY_DETAILS';
         }
       }
     });
@@ -251,15 +251,15 @@ export class CategoriesComponent {
     if (!this.categoryToDelete) return;
     this.categoriesService.delete(this.categoryToDelete).subscribe({
       next: () => {
-        this.successMessage = 'Category deleted';
+        this.successMessage = 'CATEGORIES.CATEGORY_DELETED_SUCCESS';
         this.loadCategories();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Delete failed: ' + (err.error?.message || err.message);
+          this.errorMessage = 'CATEGORIES.DELETE_FAILED';
         }
       }
     });
@@ -300,7 +300,7 @@ export class CategoriesComponent {
 
   removeLang(index: number) {
     if (this.selectedLangs.length <= 1) {
-      this.errorMessage = 'You must keep at least one language';
+      this.errorMessage = 'CATEGORIES.KEEP_AT_LEAST_ONE_LANGUAGE';
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
