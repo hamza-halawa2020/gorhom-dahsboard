@@ -49,12 +49,12 @@
           </td>
           <td>
             <a [routerLink]="['/apps/products', p.id]" class="fw-medium">
-              {{ p.title || ('PRODUCTS.NO_TITLE' | translate) }}
+              {{ p.title.ar || ('PRODUCTS.NO_TITLE' | translate) }}
             </a>
             <div class="small text-muted" *ngIf="p.slug">{{ p.slug }}</div>
           </td>
           <td>
-            <span class="badge bg-secondary">{{ p.category?.name || ('PRODUCTS.UNCATEGORIZED' | translate) }}</span>
+            <span class="badge bg-secondary">{{ p.category?.name.ar || ('PRODUCTS.UNCATEGORIZED' | translate) }}</span>
           </td>
           <td>{{ p.price_before_discount | currency:'EGP ' }}</td>
           <td>
@@ -63,7 +63,7 @@
           </td>
           <td class="text-success fw-bold">{{ p.price_after_discount | currency:'EGP ' }}</td>
           <td>
-            <i class="ri-eye-line me-1"></i>{{ p.views?.length || 0 }}
+            <i class="ri-eye-line me-1 px-1"></i>{{ p.views?.length || 0 }}
           </td>
           <td>{{ p.createdBy?.name || 'Admin' }}</td>
           <td>
@@ -211,16 +211,16 @@
               
               <!-- Current image (edit mode) -->
               <div class="mt-3" *ngIf="isEditMode && currentProductImage && !mainImagePreview">
-                <div class="small text-muted mb-1">Current Image:</div>
+                <div class="small text-muted mb-1">{{ 'PRODUCTS.CURRENT_IMAGE' | translate }}:</div>
                 <img [src]="imageUrl + (currentProductImage || '')" alt="Current" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
               </div>
             </div>
             
             <div class="col-md-6">
-              <label class="form-label">Additional Images (Gallery)</label>
+              <label class="form-label">{{ 'PRODUCTS.ADDITIONAL_IMAGES' | translate }}</label>
               <input type="file" class="form-control" multiple (change)="onAdditionalImagesChange($event)" 
                      accept="image/*" [disabled]="isUploading">
-              <small class="text-muted">You can upload multiple images</small>
+              <small class="text-muted">{{ 'PRODUCTS.MULTI_IMAGES' | translate }}</small>
               
               <!-- Preview for new images -->
               <div class="mt-3 d-flex gap-2 flex-wrap" *ngIf="additionalImagesPreview?.length">
@@ -235,7 +235,7 @@
               
               <!-- Current images (edit mode) -->
               <div class="mt-3" *ngIf="isEditMode && currentProductFiles?.length && !additionalImagesPreview?.length">
-                <div class="small text-muted mb-1">Current Gallery:</div>
+                <div class="small text-muted mb-1">{{ 'PRODUCTS.CURRENT_GALLERY' | translate }}:</div>
                 <div class="d-flex gap-2 flex-wrap">
                   <div *ngFor="let file of currentProductFiles">
                     <img [src]="imageUrl + (file.path || '')" alt="Gallery" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">

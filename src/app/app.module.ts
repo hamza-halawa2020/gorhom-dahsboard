@@ -17,6 +17,7 @@ import {
   HTTP_INTERCEPTORS,
 } from '@angular/common/http';
 import { JwtInterceptor } from './core/helpers/jwt.interceptor';
+import { LanguageInterceptor } from './core/helpers/language.interceptor';
 
 // Store
 import { StoreModule } from '@ngrx/store';
@@ -51,6 +52,7 @@ export function createTranslateLoader(http: HttpClient): any {
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: LanguageInterceptor, multi: true },
     CookieService,
   ],
   bootstrap: [AppComponent],
