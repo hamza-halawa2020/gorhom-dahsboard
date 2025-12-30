@@ -3,14 +3,19 @@ import { CommonModule } from '@angular/common';
 
 // component
 import { BreadcrumbsComponent } from './breadcrumbs/breadcrumbs.component';
+import { LanguageSwitcherComponent } from './language-switcher/language-switcher.component';
 
 @NgModule({
   declarations: [
-    BreadcrumbsComponent
+    BreadcrumbsComponent,
+    LanguageSwitcherComponent
   ],
   imports: [
     CommonModule
   ],
-  exports: [BreadcrumbsComponent]
+  exports: [
+    BreadcrumbsComponent,
+    LanguageSwitcherComponent
+  ]
 })
 export class SharedModule { }

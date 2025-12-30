@@ -207,4 +207,13 @@ export class ReviewsComponent {
       default: return 'bg-warning';
     }
   }
+
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'approved': return 'REVIEWS.STATUS_APPROVED';
+      case 'rejected': return 'REVIEWS.STATUS_REJECTED';
+      case 'spam': return 'REVIEWS.STATUS_SPAM';
+      default: return 'REVIEWS.STATUS_PENDING';
+    }
+  }
 }
