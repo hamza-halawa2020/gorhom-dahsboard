@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { ReviewsService } from 'src/app/core/services/reviews.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-reviews',
@@ -42,7 +43,10 @@ export class ReviewsComponent {
   // Rating stars
   stars = [1, 2, 3, 4, 5];
 
-  constructor(private reviewsService: ReviewsService) {}
+  constructor(
+    private reviewsService: ReviewsService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadReviews();
@@ -58,10 +62,10 @@ export class ReviewsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = this.translate.instant('REVIEWS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load reviews';
+          this.errorMessage = this.translate.instant('REVIEWS.FAILED_TO_LOAD_REVIEWS');
         }
       }
     });
@@ -73,7 +77,7 @@ export class ReviewsComponent {
         this.products = res.data || res;
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load products';
+        this.errorMessage = this.translate.instant('REVIEWS.FAILED_TO_LOAD_PRODUCTS');
       }
     });
   }
@@ -87,19 +91,19 @@ export class ReviewsComponent {
 
   saveReview() {
     if (!this.form.name) {
-      this.errorMessage = 'Name is required';
+      this.errorMessage = this.translate.instant('REVIEWS.NAME_REQUIRED');
       return;
     }
     if (!this.form.review) {
-      this.errorMessage = 'Review text is required';
+      this.errorMessage = this.translate.instant('REVIEWS.REVIEW_TEXT_REQUIRED');
       return;
     }
     if (!this.form.product_id) {
-      this.errorMessage = 'Please select a product';
+      this.errorMessage = this.translate.instant('REVIEWS.PLEASE_SELECT_PRODUCT');
       return;
     }
     if (!this.form.rate || this.form.rate < 1 || this.form.rate > 5) {
-      this.errorMessage = 'Please select a rating (1-5)';
+      this.errorMessage = this.translate.instant('REVIEWS.PLEASE_SELECT_RATING');
       return;
     }
 
@@ -120,17 +124,17 @@ export class ReviewsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.reviewsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('Review updated successfully'),
+        next: () => this.afterSave(this.translate.instant('REVIEWS.REVIEW_UPDATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Update failed';
+          this.errorMessage = err.error?.message || this.translate.instant('REVIEWS.UPDATE_FAILED');
           this.isUploading = false;
         }
       });
     } else {
       this.reviewsService.store(data).subscribe({
-        next: () => this.afterSave('Review created successfully'),
+        next: () => this.afterSave(this.translate.instant('REVIEWS.REVIEW_CREATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Create failed';
+          this.errorMessage = err.error?.message || this.translate.instant('REVIEWS.CREATE_FAILED');
           this.isUploading = false;
         }
       });
@@ -173,11 +177,11 @@ export class ReviewsComponent {
     if (!this.reviewToDelete) return;
     this.reviewsService.delete(this.reviewToDelete).subscribe({
       next: () => {
-        this.successMessage = 'Review deleted';
+        this.successMessage = this.translate.instant('REVIEWS.REVIEW_DELETED_SUCCESS');
         this.loadReviews();
       },
       error: (err) => {
-        this.errorMessage = 'Delete failed';
+        this.errorMessage = this.translate.instant('REVIEWS.DELETE_FAILED');
       }
     });
     this.deleteModal.hide();

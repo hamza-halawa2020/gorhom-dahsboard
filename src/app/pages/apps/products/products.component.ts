@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { environment } from 'src/environments/environment';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-products',
@@ -60,7 +61,10 @@ export class ProductsComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private productsService: ProductsService) {}
+  constructor(
+    private productsService: ProductsService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
@@ -77,12 +81,12 @@ export class ProductsComponent {
       error: (err) => {
         console.error('Load products error:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
           setTimeout(() => {
             window.location.href = '/auth/login';
           }, 2000);
         } else {
-          this.errorMessage = 'Failed to load products: ' + (err.error?.message || err.message);
+          this.errorMessage = this.translate.instant('PRODUCTS.FAILED_TO_LOAD_PRODUCTS');
         }
       }
     });
@@ -96,9 +100,9 @@ export class ProductsComponent {
       error: (err) => {
         console.error('Load categories error:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
         } else {
-          this.errorMessage = 'Failed to load categories';
+          this.errorMessage = this.translate.instant('PRODUCTS.FAILED_TO_LOAD_CATEGORIES');
         }
       }
     });
@@ -170,16 +174,16 @@ export class ProductsComponent {
     // ensure at least one title for selected languages
     for (const lang of this.selectedLangs) {
       if (!this.form.title?.[lang.code]) {
-        this.errorMessage = `Title (${lang.label}) is required`;
+        this.errorMessage = this.translate.instant('PRODUCTS.TITLE_REQUIRED');
         return;
       }
     }
     if (!this.form.category_id) {
-      this.errorMessage = 'Please select a category';
+      this.errorMessage = this.translate.instant('PRODUCTS.CATEGORY_REQUIRED');
       return;
     }
     if (!this.mainImage && !this.isEditMode) {
-      this.errorMessage = 'Main image is required';
+      this.errorMessage = this.translate.instant('PRODUCTS.MAIN_IMAGE_REQUIRED');
       return;
     }
 
@@ -210,28 +214,28 @@ export class ProductsComponent {
     if (this.isEditMode) {
       fd.append('_method', 'PUT');
       this.productsService.update(this.form.id, fd).subscribe({
-        next: () => this.afterSave('Product updated successfully'),
+        next: () => this.afterSave(this.translate.instant('PRODUCTS.PRODUCT_UPDATED_SUCCESS')),
         error: (err) => {
           console.error('Update error', err);
           if (err.status === 401) {
-            this.errorMessage = 'Session expired. Please login again.';
+            this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
             // setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
-            this.errorMessage = err.error?.message || 'Update failed';
+            this.errorMessage = err.error?.message || this.translate.instant('PRODUCTS.UPDATE_FAILED');
           }
           this.isUploading = false;
         }
       });
     } else {
       this.productsService.store(fd).subscribe({
-        next: () => this.afterSave('Product created successfully'),
+        next: () => this.afterSave(this.translate.instant('PRODUCTS.PRODUCT_CREATED_SUCCESS')),
         error: (err) => {
           console.error('Create error', err);
           if (err.status === 401) {
-            this.errorMessage = 'Session expired. Please login again.';
+            this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
             // setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
-            this.errorMessage = err.error?.message || 'Create failed';
+            this.errorMessage = err.error?.message || this.translate.instant('PRODUCTS.CREATE_FAILED');
           }
           this.isUploading = false;
         }
@@ -326,10 +330,10 @@ export class ProductsComponent {
       error: (err) => {
         console.error('Failed to load product details:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Failed to load product details: ' + (err.error?.message || err.message);
+          this.errorMessage = this.translate.instant('PRODUCTS.FAILED_TO_LOAD_PRODUCT_DETAILS');
         }
       }
     });
@@ -344,15 +348,15 @@ export class ProductsComponent {
     if (!this.productToDelete) return;
     this.productsService.delete(this.productToDelete).subscribe({
       next: () => {
-        this.successMessage = 'Product deleted';
+        this.successMessage = this.translate.instant('PRODUCTS.PRODUCT_DELETED_SUCCESS');
         this.loadProducts();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
           // setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'Delete failed: ' + (err.error?.message || err.message);
+          this.errorMessage = this.translate.instant('PRODUCTS.DELETE_FAILED');
         }
       }
     });
@@ -410,7 +414,7 @@ export class ProductsComponent {
 
   removeLang(index: number) {
     if (this.selectedLangs.length <= 1) {
-      this.errorMessage = 'You must keep at least one language';
+      this.errorMessage = this.translate.instant('PRODUCTS.KEEP_AT_LEAST_ONE_LANGUAGE');
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }

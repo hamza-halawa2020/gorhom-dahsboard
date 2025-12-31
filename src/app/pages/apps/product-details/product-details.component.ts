@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { environment } from 'src/environments/environment';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-product-details',
@@ -36,7 +37,8 @@ export class ProductDetailsComponent {
 
   constructor(
     private route: ActivatedRoute,
-    private productService: ProductsService
+    private productService: ProductsService,
+    private translate: TranslateService
   ) { }
 
   ngOnInit(): void {
@@ -55,12 +57,12 @@ export class ProductDetailsComponent {
       error: (err) => {
         console.error('Failed to load product:', err);
         if (err.status === 401) {
-          this.errorMessage = 'Session expired. Please login again.';
+          this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else if (err.status === 404) {
-          this.errorMessage = 'Product not found';
+          this.errorMessage = this.translate.instant('PRODUCTS.PRODUCT_NOT_FOUND');
         } else {
-          this.errorMessage = 'Failed to load product: ' + (err.error?.message || err.message);
+          this.errorMessage = this.translate.instant('PRODUCTS.FAILED_TO_LOAD_PRODUCT_DETAILS');
         }
       }
     });
