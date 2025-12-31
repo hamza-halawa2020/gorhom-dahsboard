@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { UserProfileService } from 'src/app/core/services/user.service';
 import { environment } from 'src/environments/environment';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-users',
@@ -38,7 +39,10 @@ export class UserComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private usersService: UserProfileService) {}
+  constructor(
+    private usersService: UserProfileService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -54,12 +58,12 @@ export class UserComponent {
       error: (err) => {
         console.error('Load users error:', err);
         if (err.status === 401) {
-          this.errorMessage = 'USERS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('USERS.SESSION_EXPIRED');
           setTimeout(() => {
             window.location.href = '/auth/login';
           }, 2000);
         } else {
-          this.errorMessage = 'USERS.FAILED_TO_LOAD_USERS';
+          this.errorMessage = this.translate.instant('USERS.FAILED_TO_LOAD_USERS');
         }
       }
     });
@@ -94,19 +98,19 @@ export class UserComponent {
   saveUser() {
     // Validation
     if (!this.form.name) {
-      this.errorMessage = 'USERS.NAME_REQUIRED';
+      this.errorMessage = this.translate.instant('USERS.NAME_REQUIRED');
       return;
     }
     if (!this.form.email && !this.isEditMode) {
-      this.errorMessage = 'USERS.EMAIL_REQUIRED';
+      this.errorMessage = this.translate.instant('USERS.EMAIL_REQUIRED');
       return;
     }
     if (!this.form.password && !this.isEditMode) {
-      this.errorMessage = 'USERS.PASSWORD_REQUIRED';
+      this.errorMessage = this.translate.instant('USERS.PASSWORD_REQUIRED');
       return;
     }
     if (this.form.password && this.form.password.length < 6) {
-      this.errorMessage = 'USERS.PASSWORD_MIN_6';
+      this.errorMessage = this.translate.instant('USERS.PASSWORD_MIN_6');
       return;
     }
 
@@ -131,26 +135,26 @@ export class UserComponent {
     if (this.isEditMode) {
       formData.append('_method', 'PUT');
       this.usersService.updateUser(this.form.id, formData).subscribe({
-        next: () => this.afterSave('USERS.USER_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('USERS.USER_UPDATED_SUCCESS')),
         error: (err) => {
           console.error('Update error', err);
           if (err.status === 401) {
-            this.errorMessage = 'USERS.SESSION_EXPIRED';
+            this.errorMessage = this.translate.instant('USERS.SESSION_EXPIRED');
           } else {
-            this.errorMessage = err.error?.message || 'USERS.UPDATE_FAILED';
+            this.errorMessage = err.error?.message || this.translate.instant('USERS.UPDATE_FAILED');
           }
           this.isUploading = false;
         }
       });
     } else {
       this.usersService.store(formData).subscribe({
-        next: () => this.afterSave('USERS.USER_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('USERS.USER_CREATED_SUCCESS')),
         error: (err) => {
           console.error('Create error', err);
           if (err.status === 401) {
-            this.errorMessage = 'USERS.SESSION_EXPIRED';
+            this.errorMessage = this.translate.instant('USERS.SESSION_EXPIRED');
           } else {
-            this.errorMessage = err.error?.message || 'USERS.CREATE_FAILED';
+            this.errorMessage = err.error?.message || this.translate.instant('USERS.CREATE_FAILED');
           }
           this.isUploading = false;
         }
@@ -207,10 +211,10 @@ export class UserComponent {
         this.imagePreview = null;
         this.userModal.show();
         if (err.status === 401) {
-          this.errorMessage = 'USERS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('USERS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'USERS.FAILED_TO_LOAD_USER_DETAILS';
+          this.errorMessage = this.translate.instant('USERS.FAILED_TO_LOAD_USER_DETAILS');
         }
       }
     });
@@ -225,14 +229,14 @@ export class UserComponent {
     if (!this.userToDelete) return;
     this.usersService.delete(this.userToDelete).subscribe({
       next: () => {
-        this.successMessage = 'USERS.USER_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('USERS.USER_DELETED_SUCCESS');
         this.loadUsers();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'USERS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('USERS.SESSION_EXPIRED');
         } else {
-          this.errorMessage = 'USERS.DELETE_FAILED';
+          this.errorMessage = this.translate.instant('USERS.DELETE_FAILED');
         }
       }
     });
@@ -262,15 +266,15 @@ export class UserComponent {
     }).subscribe({
       next: () => {
         user.type = updatedType;
-        this.successMessage = 'USERS.USER_TYPE_UPDATED_SUCCESS';
+        this.successMessage = this.translate.instant('USERS.USER_TYPE_UPDATED_SUCCESS');
         setTimeout(() => this.successMessage = '', 3000);
         this.loadUsers();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'USERS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('USERS.SESSION_EXPIRED');
         } else {
-          this.errorMessage = 'USERS.ERROR_UPDATING_USER_TYPE';
+          this.errorMessage = this.translate.instant('USERS.ERROR_UPDATING_USER_TYPE');
         }
         setTimeout(() => this.errorMessage = '', 3000);
       }

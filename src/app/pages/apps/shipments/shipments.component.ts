@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { ShipmentsService } from 'src/app/core/services/shipments.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-shipments',
@@ -31,7 +32,7 @@ export class ShipmentsComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private shipmentsService: ShipmentsService) {}
+  constructor(private shipmentsService: ShipmentsService, private translate: TranslateService) {}
 
   ngOnInit(): void {
     this.loadShipments();
@@ -47,10 +48,10 @@ export class ShipmentsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'SHIPMENTS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('SHIPMENTS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'SHIPMENTS.FAILED_TO_LOAD_SHIPMENTS';
+          this.errorMessage = this.translate.instant('SHIPMENTS.FAILED_TO_LOAD_SHIPMENTS');
         }
       }
     });
@@ -62,7 +63,7 @@ export class ShipmentsComponent {
         this.countries = res.data || res;
       },
       error: (err) => {
-        this.errorMessage = 'SHIPMENTS.FAILED_TO_LOAD_COUNTRIES';
+        this.errorMessage = this.translate.instant('SHIPMENTS.FAILED_TO_LOAD_COUNTRIES');
       }
     });
   }
@@ -75,7 +76,7 @@ export class ShipmentsComponent {
           this.form.city_id = ''; // Reset city selection
         },
         error: (err) => {
-          this.errorMessage = 'SHIPMENTS.FAILED_TO_LOAD_CITIES';
+          this.errorMessage = this.translate.instant('SHIPMENTS.FAILED_TO_LOAD_CITIES');
           this.cities = [];
         }
       });
@@ -90,15 +91,15 @@ export class ShipmentsComponent {
 
   saveShipment() {
     if (!this.form.country_id) {
-      this.errorMessage = 'SHIPMENTS.PLEASE_SELECT_COUNTRY';
+      this.errorMessage = this.translate.instant('SHIPMENTS.PLEASE_SELECT_COUNTRY');
       return;
     }
     if (!this.form.city_id) {
-      this.errorMessage = 'SHIPMENTS.PLEASE_SELECT_CITY';
+      this.errorMessage = this.translate.instant('SHIPMENTS.PLEASE_SELECT_CITY');
       return;
     }
     if (!this.form.cost || this.form.cost <= 0) {
-      this.errorMessage = 'SHIPMENTS.PLEASE_ENTER_VALID_COST';
+      this.errorMessage = this.translate.instant('SHIPMENTS.PLEASE_ENTER_VALID_COST');
       return;
     }
 
@@ -114,17 +115,17 @@ export class ShipmentsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.shipmentsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('SHIPMENTS.SHIPMENT_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('SHIPMENTS.SHIPMENT_UPDATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'SHIPMENTS.UPDATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('SHIPMENTS.UPDATE_FAILED');
           this.isUploading = false;
         }
       });
     } else {
       this.shipmentsService.store(data).subscribe({
-        next: () => this.afterSave('SHIPMENTS.SHIPMENT_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('SHIPMENTS.SHIPMENT_CREATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'SHIPMENTS.CREATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('SHIPMENTS.CREATE_FAILED');
           this.isUploading = false;
         }
       });
@@ -175,11 +176,11 @@ export class ShipmentsComponent {
     if (!this.shipmentToDelete) return;
     this.shipmentsService.delete(this.shipmentToDelete).subscribe({
       next: () => {
-        this.successMessage = 'SHIPMENTS.SHIPMENT_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('SHIPMENTS.SHIPMENT_DELETED_SUCCESS');
         this.loadShipments();
       },
       error: (err) => {
-        this.errorMessage = 'SHIPMENTS.DELETE_FAILED';
+        this.errorMessage = this.translate.instant('SHIPMENTS.DELETE_FAILED');
       }
     });
     this.deleteModal.hide();

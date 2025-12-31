@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { CategoriesService } from 'src/app/core/services/categories.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { environment } from 'src/environments/environment';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-categories',
@@ -50,7 +51,7 @@ export class CategoriesComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private categoriesService: CategoriesService) { }
+  constructor(private categoriesService: CategoriesService, private translate: TranslateService) { }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -67,10 +68,10 @@ export class CategoriesComponent {
       error: (err) => {
         console.error('Load categories error:', err);
         if (err.status === 401) {
-          this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('CATEGORIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'CATEGORIES.FAILED_TO_LOAD_CATEGORIES';
+          this.errorMessage = this.translate.instant('CATEGORIES.FAILED_TO_LOAD_CATEGORIES');
         }
       }
     });
@@ -109,12 +110,12 @@ export class CategoriesComponent {
     // Ensure at least one name for selected languages
     for (const lang of this.selectedLangs) {
       if (!this.form.name?.[lang.code]) {
-        this.errorMessage = `CATEGORIES.NAME_REQUIRED`;
+        this.errorMessage = this.translate.instant('CATEGORIES.NAME_REQUIRED');
         return;
       }
     }
     if (!this.imageFile && !this.isEditMode) {
-      this.errorMessage = 'CATEGORIES.IMAGE_REQUIRED';
+      this.errorMessage = this.translate.instant('CATEGORIES.IMAGE_REQUIRED');
       return;
     }
 
@@ -137,28 +138,28 @@ export class CategoriesComponent {
     if (this.isEditMode) {
       fd.append('_method', 'PUT');
       this.categoriesService.update(this.form.id, fd).subscribe({
-        next: () => this.afterSave('CATEGORIES.CATEGORY_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('CATEGORIES.CATEGORY_UPDATED_SUCCESS')),
         error: (err) => {
           console.error('Update error', err);
           if (err.status === 401) {
-            this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
+            this.errorMessage = this.translate.instant('CATEGORIES.SESSION_EXPIRED');
             setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
-            this.errorMessage = err.error?.message || 'CATEGORIES.UPDATE_FAILED';
+            this.errorMessage = err.error?.message || this.translate.instant('CATEGORIES.UPDATE_FAILED');
           }
           this.isUploading = false;
         }
       });
     } else {
       this.categoriesService.store(fd).subscribe({
-        next: () => this.afterSave('CATEGORIES.CATEGORY_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('CATEGORIES.CATEGORY_CREATED_SUCCESS')),
         error: (err) => {
           console.error('Create error', err);
           if (err.status === 401) {
-            this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
+            this.errorMessage = this.translate.instant('CATEGORIES.SESSION_EXPIRED');
             setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
-            this.errorMessage = err.error?.message || 'CATEGORIES.CREATE_FAILED';
+            this.errorMessage = err.error?.message || this.translate.instant('CATEGORIES.CREATE_FAILED');
           }
           this.isUploading = false;
         }
@@ -233,10 +234,10 @@ export class CategoriesComponent {
       error: (err) => {
         console.error('Failed to load category details:', err);
         if (err.status === 401) {
-          this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('CATEGORIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'CATEGORIES.FAILED_TO_LOAD_CATEGORY_DETAILS';
+          this.errorMessage = this.translate.instant('CATEGORIES.FAILED_TO_LOAD_CATEGORY_DETAILS');
         }
       }
     });
@@ -251,15 +252,15 @@ export class CategoriesComponent {
     if (!this.categoryToDelete) return;
     this.categoriesService.delete(this.categoryToDelete).subscribe({
       next: () => {
-        this.successMessage = 'CATEGORIES.CATEGORY_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('CATEGORIES.CATEGORY_DELETED_SUCCESS');
         this.loadCategories();
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'CATEGORIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('CATEGORIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'CATEGORIES.DELETE_FAILED';
+          this.errorMessage = this.translate.instant('CATEGORIES.DELETE_FAILED');
         }
       }
     });
@@ -300,7 +301,7 @@ export class CategoriesComponent {
 
   removeLang(index: number) {
     if (this.selectedLangs.length <= 1) {
-      this.errorMessage = 'CATEGORIES.KEEP_AT_LEAST_ONE_LANGUAGE';
+      this.errorMessage = this.translate.instant('CATEGORIES.KEEP_AT_LEAST_ONE_LANGUAGE');
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }

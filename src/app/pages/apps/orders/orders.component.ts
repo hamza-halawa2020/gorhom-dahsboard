@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { OrdersService } from 'src/app/core/services/orders.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-orders',
@@ -29,7 +30,10 @@ export class OrdersComponent {
     { value: 'cancelled', label: 'ORDERS.STATUS_CANCELLED', class: 'bg-danger' }
   ];
 
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private ordersService: OrdersService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadOrders();
@@ -44,10 +48,10 @@ export class OrdersComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'ORDERS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('ORDERS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'ORDERS.FAILED_TO_LOAD_ORDERS';
+          this.errorMessage = this.translate.instant('ORDERS.FAILED_TO_LOAD_ORDERS');
         }
       }
     });
@@ -63,7 +67,7 @@ export class OrdersComponent {
         this.orderDetailsModal.show();
       },
       error: (err) => {
-        this.errorMessage = 'ORDERS.FAILED_TO_LOAD_ORDER_DETAILS';
+        this.errorMessage = this.translate.instant('ORDERS.FAILED_TO_LOAD_ORDER_DETAILS');
       }
     });
   }
@@ -79,13 +83,13 @@ export class OrdersComponent {
 
     this.ordersService.updateStatus(this.selectedOrderId, this.newStatus).subscribe({
       next: () => {
-        this.successMessage = 'ORDERS.ORDER_STATUS_UPDATED';
+        this.successMessage = this.translate.instant('ORDERS.ORDER_STATUS_UPDATED');
         setTimeout(() => this.successMessage = '', 4000);
         this.statusModal.hide();
         this.loadOrders();
       },
       error: (err) => {
-        this.errorMessage = 'ORDERS.FAILED_TO_UPDATE_STATUS';
+        this.errorMessage = this.translate.instant('ORDERS.FAILED_TO_UPDATE_STATUS');
       }
     });
   }
@@ -99,11 +103,11 @@ export class OrdersComponent {
         link.download = 'pending-orders.xlsx';
         link.click();
         window.URL.revokeObjectURL(blobUrl);
-        this.successMessage = 'ORDERS.FILE_DOWNLOADED_SUCCESSFULLY';
+        this.successMessage = this.translate.instant('ORDERS.FILE_DOWNLOADED_SUCCESSFULLY');
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (err) => {
-        this.errorMessage = 'ORDERS.FAILED_TO_EXPORT_ORDERS';
+        this.errorMessage = this.translate.instant('ORDERS.FAILED_TO_EXPORT_ORDERS');
       }
     });
   }

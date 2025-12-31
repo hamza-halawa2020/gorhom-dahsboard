@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { CountriesService } from 'src/app/core/services/countries.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-countries',
@@ -40,7 +41,7 @@ export class CountriesComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private countriesService: CountriesService) {}
+  constructor(private countriesService: CountriesService, private translate: TranslateService) {}
 
   ngOnInit(): void {
     this.loadCountries();
@@ -55,10 +56,10 @@ export class CountriesComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'COUNTRIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('COUNTRIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'COUNTRIES.FAILED_TO_LOAD_COUNTRIES';
+          this.errorMessage = this.translate.instant('COUNTRIES.FAILED_TO_LOAD_COUNTRIES');
         }
       }
     });
@@ -70,7 +71,7 @@ export class CountriesComponent {
   saveCountry() {
     for (const lang of this.selectedLangs) {
       if (!this.form.title?.[lang.code]) {
-        this.errorMessage = `COUNTRIES.TITLE_REQUIRED`;
+        this.errorMessage = this.translate.instant('COUNTRIES.TITLE_REQUIRED');
         return;
       }
     }
@@ -86,17 +87,17 @@ export class CountriesComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.countriesService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('COUNTRIES.COUNTRY_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('COUNTRIES.COUNTRY_UPDATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'COUNTRIES.UPDATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('COUNTRIES.UPDATE_FAILED');
           this.isUploading = false;
         }
       });
     } else {
       this.countriesService.store(data).subscribe({
-        next: () => this.afterSave('COUNTRIES.COUNTRY_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('COUNTRIES.COUNTRY_CREATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'COUNTRIES.CREATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('COUNTRIES.CREATE_FAILED');
           this.isUploading = false;
         }
       });
@@ -162,10 +163,10 @@ export class CountriesComponent {
       error: (err) => {
         console.error('Failed to load country details:', err);
         if (err.status === 401) {
-          this.errorMessage = 'COUNTRIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('COUNTRIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'COUNTRIES.FAILED_TO_LOAD_COUNTRY_DETAILS';
+          this.errorMessage = this.translate.instant('COUNTRIES.FAILED_TO_LOAD_COUNTRY_DETAILS');
         }
       }
     });
@@ -180,11 +181,11 @@ export class CountriesComponent {
     if (!this.countryToDelete) return;
     this.countriesService.delete(this.countryToDelete).subscribe({
       next: () => {
-        this.successMessage = 'COUNTRIES.COUNTRY_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('COUNTRIES.COUNTRY_DELETED_SUCCESS');
         this.loadCountries();
       },
       error: (err) => {
-        this.errorMessage = 'COUNTRIES.DELETE_FAILED';
+        this.errorMessage = this.translate.instant('COUNTRIES.DELETE_FAILED');
       }
     });
     this.deleteModal.hide();
@@ -222,7 +223,7 @@ export class CountriesComponent {
 
   removeLang(index: number) {
     if (this.selectedLangs.length <= 1) {
-      this.errorMessage = 'COUNTRIES.KEEP_AT_LEAST_ONE_LANGUAGE';
+      this.errorMessage = this.translate.instant('COUNTRIES.KEEP_AT_LEAST_ONE_LANGUAGE');
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }

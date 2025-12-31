@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { CitiesService } from 'src/app/core/services/cities.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-cities',
@@ -42,7 +43,7 @@ export class CitiesComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private citiesService: CitiesService) {}
+  constructor(private citiesService: CitiesService, private translate: TranslateService) {}
 
   ngOnInit(): void {
     this.loadCities();
@@ -58,10 +59,10 @@ export class CitiesComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'CITIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('CITIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'CITIES.FAILED_TO_LOAD_CITIES';
+          this.errorMessage = this.translate.instant('CITIES.FAILED_TO_LOAD_CITIES');
         }
       }
     });
@@ -73,7 +74,7 @@ export class CitiesComponent {
         this.countries = res.data || res;
       },
       error: (err) => {
-        this.errorMessage = 'CITIES.FAILED_TO_LOAD_COUNTRIES';
+        this.errorMessage = this.translate.instant('CITIES.FAILED_TO_LOAD_COUNTRIES');
       }
     });
   }
@@ -84,12 +85,12 @@ export class CitiesComponent {
   saveCity() {
     for (const lang of this.selectedLangs) {
       if (!this.form.title?.[lang.code]) {
-        this.errorMessage = `CITIES.TITLE_REQUIRED`;
+        this.errorMessage = this.translate.instant('CITIES.TITLE_REQUIRED');
         return;
       }
     }
     if (!this.form.country_id) {
-      this.errorMessage = 'CITIES.PLEASE_SELECT_COUNTRY';
+      this.errorMessage = this.translate.instant('CITIES.PLEASE_SELECT_COUNTRY');
       return;
     }
 
@@ -104,17 +105,17 @@ export class CitiesComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.citiesService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('CITIES.CITY_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('CITIES.CITY_UPDATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'CITIES.UPDATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('CITIES.UPDATE_FAILED');
           this.isUploading = false;
         }
       });
     } else {
       this.citiesService.store(data).subscribe({
-        next: () => this.afterSave('CITIES.CITY_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('CITIES.CITY_CREATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'CITIES.CREATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('CITIES.CREATE_FAILED');
           this.isUploading = false;
         }
       });
@@ -184,10 +185,10 @@ export class CitiesComponent {
       error: (err) => {
         console.error('Failed to load city details:', err);
         if (err.status === 401) {
-          this.errorMessage = 'CITIES.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('CITIES.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'CITIES.FAILED_TO_LOAD_CITY_DETAILS';
+          this.errorMessage = this.translate.instant('CITIES.FAILED_TO_LOAD_CITY_DETAILS');
         }
       }
     });
@@ -202,11 +203,11 @@ export class CitiesComponent {
     if (!this.cityToDelete) return;
     this.citiesService.delete(this.cityToDelete).subscribe({
       next: () => {
-        this.successMessage = 'CITIES.CITY_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('CITIES.CITY_DELETED_SUCCESS');
         this.loadCities();
       },
       error: (err) => {
-        this.errorMessage = 'CITIES.DELETE_FAILED';
+        this.errorMessage = this.translate.instant('CITIES.DELETE_FAILED');
       }
     });
     this.deleteModal.hide();
@@ -244,7 +245,7 @@ export class CitiesComponent {
 
   removeLang(index: number) {
     if (this.selectedLangs.length <= 1) {
-      this.errorMessage = 'CITIES.KEEP_AT_LEAST_ONE_LANGUAGE';
+      this.errorMessage = this.translate.instant('CITIES.KEEP_AT_LEAST_ONE_LANGUAGE');
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }

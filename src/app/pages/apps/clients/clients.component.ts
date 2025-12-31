@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { ClientsService } from 'src/app/core/services/clients.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-clients',
@@ -40,7 +41,10 @@ export class ClientsComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private clientsService: ClientsService) {}
+  constructor(
+    private clientsService: ClientsService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadClients();
@@ -61,10 +65,10 @@ export class ClientsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'CLIENTS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('CLIENTS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'CLIENTS.FAILED_TO_LOAD_CLIENTS';
+          this.errorMessage = this.translate.instant('CLIENTS.FAILED_TO_LOAD_CLIENTS');
         }
       }
     });
@@ -86,11 +90,11 @@ export class ClientsComponent {
 
   saveClient() {
     if (!this.form.name) {
-      this.errorMessage = 'CLIENTS.NAME_REQUIRED';
+      this.errorMessage = this.translate.instant('CLIENTS.NAME_REQUIRED');
       return;
     }
     if (!this.form.phone) {
-      this.errorMessage = 'CLIENTS.PHONE_REQUIRED';
+      this.errorMessage = this.translate.instant('CLIENTS.PHONE_REQUIRED');
       return;
     }
 
@@ -107,17 +111,17 @@ export class ClientsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.clientsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('CLIENTS.CLIENT_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('CLIENTS.CLIENT_UPDATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'CLIENTS.UPDATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('CLIENTS.UPDATE_FAILED');
           this.isUploading = false;
         }
       });
     } else {
       this.clientsService.store(data).subscribe({
-        next: () => this.afterSave('CLIENTS.CLIENT_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('CLIENTS.CLIENT_CREATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'CLIENTS.CREATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('CLIENTS.CREATE_FAILED');
           this.isUploading = false;
         }
       });
@@ -158,14 +162,14 @@ export class ClientsComponent {
     if (!this.clientToDelete) return;
     this.clientsService.delete(this.clientToDelete).subscribe({
       next: () => {
-        this.successMessage = 'CLIENTS.CLIENT_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('CLIENTS.CLIENT_DELETED_SUCCESS');
         this.loadClients();
       },
       error: (err) => {
         if (err.status === 400) {
-          this.errorMessage = 'CLIENTS.CANNOT_DELETE_CLIENT_WITH_ORDERS';
+          this.errorMessage = this.translate.instant('CLIENTS.CANNOT_DELETE_CLIENT_WITH_ORDERS');
         } else {
-          this.errorMessage = 'CLIENTS.DELETE_FAILED';
+          this.errorMessage = this.translate.instant('CLIENTS.DELETE_FAILED');
         }
       }
     });
@@ -179,7 +183,7 @@ export class ClientsComponent {
         this.statsModal.show();
       },
       error: (err) => {
-        this.errorMessage = 'CLIENTS.FAILED_TO_LOAD_STATISTICS';
+        this.errorMessage = this.translate.instant('CLIENTS.FAILED_TO_LOAD_STATISTICS');
       }
     });
   }
