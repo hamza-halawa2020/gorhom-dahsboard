@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { CouponsService } from 'src/app/core/services/coupons.service';
 import { ModalDirective } from 'ngx-bootstrap/modal';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-coupons',
@@ -49,7 +50,10 @@ export class CouponsComponent {
     { value: 'first_order', label: 'COUPONS.AUTO_TYPE_FIRST_ORDER' }
   ];
 
-  constructor(private couponsService: CouponsService) {}
+  constructor(
+    private couponsService: CouponsService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadCoupons();
@@ -64,10 +68,10 @@ export class CouponsComponent {
       },
       error: (err) => {
         if (err.status === 401) {
-          this.errorMessage = 'COUPONS.SESSION_EXPIRED';
+          this.errorMessage = this.translate.instant('COUPONS.SESSION_EXPIRED');
           setTimeout(() => window.location.href = '/auth/login', 2000);
         } else {
-          this.errorMessage = 'COUPONS.FAILED_TO_LOAD_COUPONS';
+          this.errorMessage = this.translate.instant('COUPONS.FAILED_TO_LOAD_COUPONS');
         }
       }
     });
@@ -78,15 +82,15 @@ export class CouponsComponent {
 
   saveCoupon() {
     if (!this.form.code) {
-      this.errorMessage = 'COUPONS.CODE_REQUIRED';
+      this.errorMessage = this.translate.instant('COUPONS.CODE_REQUIRED');
       return;
     }
     if (!this.form.type) {
-      this.errorMessage = 'COUPONS.TYPE_REQUIRED';
+      this.errorMessage = this.translate.instant('COUPONS.TYPE_REQUIRED');
       return;
     }
     if (!this.form.value || this.form.value <= 0) {
-      this.errorMessage = 'COUPONS.VALUE_GREATER_THAN_ZERO';
+      this.errorMessage = this.translate.instant('COUPONS.VALUE_GREATER_THAN_ZERO');
       return;
     }
 
@@ -114,17 +118,17 @@ export class CouponsComponent {
     if (this.isEditMode) {
       data._method = 'PUT';
       this.couponsService.update(this.form.id, data).subscribe({
-        next: () => this.afterSave('COUPONS.COUPON_UPDATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('COUPONS.COUPON_UPDATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'COUPONS.UPDATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('COUPONS.UPDATE_FAILED');
           this.isUploading = false;
         }
       });
     } else {
       this.couponsService.store(data).subscribe({
-        next: () => this.afterSave('COUPONS.COUPON_CREATED_SUCCESS'),
+        next: () => this.afterSave(this.translate.instant('COUPONS.COUPON_CREATED_SUCCESS')),
         error: (err) => {
-          this.errorMessage = err.error?.message || 'COUPONS.CREATE_FAILED';
+          this.errorMessage = err.error?.message || this.translate.instant('COUPONS.CREATE_FAILED');
           this.isUploading = false;
         }
       });
@@ -174,11 +178,11 @@ export class CouponsComponent {
     if (!this.couponToDelete) return;
     this.couponsService.delete(this.couponToDelete).subscribe({
       next: () => {
-        this.successMessage = 'COUPONS.COUPON_DELETED_SUCCESS';
+        this.successMessage = this.translate.instant('COUPONS.COUPON_DELETED_SUCCESS');
         this.loadCoupons();
       },
       error: (err) => {
-        this.errorMessage = 'COUPONS.DELETE_FAILED';
+        this.errorMessage = this.translate.instant('COUPONS.DELETE_FAILED');
       }
     });
     this.deleteModal.hide();
