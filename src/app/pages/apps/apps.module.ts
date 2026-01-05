@@ -33,7 +33,6 @@ import { ProductDetailsComponent } from './product-details/product-details.compo
 import { ProductReviewComponent } from './product-review/product-review.component';
 import { ReviewsComponent } from './reviews/reviews.component';
 import { OrdersComponent } from './orders/orders.component';
-import { PaymentsComponent } from './payments/payments.component';
 import { JwtInterceptor } from 'src/app/core/helpers/jwt.interceptor';
 
 @NgModule({
@@ -51,7 +50,6 @@ import { JwtInterceptor } from 'src/app/core/helpers/jwt.interceptor';
     ProductReviewComponent,
     ReviewsComponent,
     OrdersComponent,
-    PaymentsComponent,
   ],
   imports: [
     CommonModule,

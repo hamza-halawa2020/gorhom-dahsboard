@@ -18,7 +18,6 @@ import { ProductReviewComponent } from './product-review/product-review.componen
 import { ReviewsComponent } from './reviews/reviews.component';
 // import { SocialLinksComponent } from './social-links/social-links.component';
 import { OrdersComponent } from './orders/orders.component';
-import { PaymentsComponent } from './payments/payments.component';
 
 const routes: Routes = [
 
@@ -74,10 +73,7 @@ const routes: Routes = [
     path: 'orders',
     component: OrdersComponent,
   },
-  {
-    path: 'payments',
-    component: PaymentsComponent,
-  },
+
 
 ];
 

@@ -173,6 +173,7 @@
                     <thead>
                       <tr>
                         <th>{{ 'ORDERS.PRODUCT' | translate }}</th>
+                        <th>{{ 'PRODUCTS.SIZE' | translate }}</th>
                         <th>{{ 'ORDERS.PRICE' | translate }}</th>
                         <th>{{ 'ORDERS.QUANTITY' | translate }}</th>
                         <th>{{ 'ORDERS.TOTAL' | translate }}</th>
@@ -180,10 +181,11 @@
                     </thead>
                     <tbody>
                       <tr *ngFor="let item of selectedOrder.items">
-                        <td>{{ item.product?.title?.ar || item.product?.title?.en || item.product?.title }}</td>
+                        <td>{{ item.product?.title?.ar || item.product?.title?.en }}</td>
+                        <td><span class="badge bg-secondary">{{ item.size_name }}</span></td>
                         <td>{{ item.price | currency:'EGP ' }}</td>
                         <td>{{ item.quantity }}</td>
-                        <td class="fw-bold">{{ item.total | currency:'EGP ' }}</td>
+                        <td class="fw-bold">{{ item.price * item.quantity | currency:'EGP ' }}</td>
                       </tr>
                     </tbody>
                   </table>

@@ -1,21 +1,19 @@
 export interface Order {
   id?: number;
-  order_number?: string;
-  user_id?: number;
-  user?: User; // Define as an object, not a string
-  client_id?: number;
-  client?: Client; // Define as an object, not a string
-  orderItems?: OrderItem[]; // Define as an array of objects
-  address?: Address; // Define as an object, not a string
-  coupon_discount?: string;
-  shipment_cost?: string;
-  total_price?: string;
-  notes?: string;
-  payment_method?: string;
+  address?: string;
+  
+  client?: Client;
+  shipment?: Shipment;
+  coupon?: Coupon;
+  items?: OrderItem[];
+  total_amount?: number;
+  discount_amount?: number;
+  final_amount?: number;
   status?: string;
-  admin_id?: number;
-  admin?: string; // Define as an object, not a string
+  payment_method?: string;
+  status_changed_by?: User;
   created_at?: Date | string;
+  updated_at?: Date | string;
 }
 
 // Define interfaces for nested objects
@@ -31,55 +29,49 @@ export interface Client {
   name?: string;
   email?: string;
   phone?: string;
-  addresses?: Address[]; // Define as an array of Address objects
+}
+
+export interface Shipment {
+  id?: number;
+  country?: { id: number; title: string };
+  city?: { id: number; title: string };
+  cost?: number;
+}
+
+export interface Coupon {
+  id?: number;
+  code?: string;
+  type?: string;
+  value?: number;
 }
 
 export interface OrderItem {
   id?: number;
-  product_id?: number;
-  product?: Product; // Define as an object, not a string
+  product_size_id?: number;
+  product_size?: ProductSize;
   quantity?: number;
+  price?: number;
   total?: number;
-  order_id?: number;
   created_at?: Date | string;
+}
+
+export interface ProductSize {
+  id?: number;
+  size?: string;
+  price_before_discount?: number;
+  discount?: number;
+  price_after_discount?: number;
+  stock?: number;
+  product?: Product;
 }
 
 export interface Product {
   id?: number;
-  title?: string;
-  description?: string;
-  stock?: number;
-  priceBeforeDiscount?: number;
-  discount?: number;
-  priceAfterDiscount?: number;
-  category?: string;
-  productImages?: ProductImage[]; // Define as an array of ProductImage objects
-  productReviews?: ProductReview[]; // Define as an array of ProductReview objects
-  admin?: string;
-  admin_id?: number;
-  created_at?: Date | string;
-}
-
-export interface ProductImage {
-  id?: number;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  product_id?: number;
+  title?: { [key: string]: string };
+  description?: { [key: string]: string };
   image?: string;
-}
-
-export interface ProductReview {
-  id?: number;
+  category?: { id: number; name: { [key: string]: string } };
   created_at?: Date | string;
-  updated_at?: Date | string;
-  product_id?: number;
-  client_id?: number | null;
-  admin_id?: number | null;
-  user_id?: number | null;
-  review?: string;
-  rating?: number;
-  status?: string;
-  deleted_at?: Date | string | null;
 }
 
 export interface Address {
@@ -89,9 +81,5 @@ export interface Address {
   country_id?: number;
   city?: string;
   city_id?: number;
-  user_id?: number | null;
-  user?: User; // Define as a string or User object
-  client_id?: number;
-  client?: Client; // Define as a string or Client object
-  created_at?: Date | string | null;
+  created_at?: Date | string;
 }
