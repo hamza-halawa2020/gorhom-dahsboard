@@ -95,13 +95,13 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <h3 class="mb-1">{{ productDetails.title.ar || productDetails.title.en }}</h3>
+              <h3 class="mb-1">{{ productDetails.title?.ar || productDetails.title?.en }}</h3>
               <p class="text-muted mb-0" *ngIf="productDetails.slug">
                 <i class="ri-link me-1"></i>{{ productDetails.slug }}
               </p>
             </div>
             <span class="badge bg-success fs-5">
-              {{ productDetails.price_after_discount | currency : "EGP " }}
+              {{ productDetails.sizes?.[0]?.price_after_discount | currency : "EGP " }}
             </span>
           </div>
 
@@ -113,7 +113,7 @@
               <div class="d-flex flex-column">
                 <span class="text-muted small">{{ 'PRODUCTS.PRICE_BEFORE_DISCOUNT' | translate }}</span>
                 <span class="fs-5 fw-semibold">{{
-                  productDetails.price_before_discount | currency : "EGP "
+                  productDetails.sizes?.[0]?.price_before_discount | currency : "EGP "
                 }}</span>
               </div>
             </div>
@@ -122,14 +122,14 @@
                 <span class="text-muted small">{{ 'PRODUCTS.DISCOUNT' | translate }}</span>
                 <span
                   class="fs-5 fw-semibold text-danger"
-                  *ngIf="productDetails.discount > 0"
+                  *ngIf="productDetails.sizes?.[0]?.discount > 0"
                 >
-                  -{{ productDetails.discount | currency : "EGP " }}
+                  -{{ productDetails.sizes?.[0]?.discount | currency : "EGP " }}
                 </span>
                 <span
                   class="text-muted"
                   *ngIf="
-                    !productDetails.discount || productDetails.discount === 0
+                    !productDetails.sizes?.[0]?.discount || productDetails.sizes?.[0]?.discount === 0
                   "
                 >
                   {{ 'PRODUCTS.NO_DISCOUNT' | translate }}
@@ -140,10 +140,53 @@
               <div class="d-flex flex-column">
                 <span class="text-muted small">{{ 'PRODUCTS.FINAL_PRICE' | translate }}</span>
                 <span class="fs-4 fw-bold text-success">{{
-                  productDetails.price_after_discount | currency : "EGP "
+                  productDetails.sizes?.[0]?.price_after_discount | currency : "EGP "
                 }}</span>
               </div>
             </div>
+          </div>
+
+          <hr />
+
+          <!-- Sizes Section -->
+          <div class="mb-4" *ngIf="productDetails.sizes && productDetails.sizes.length > 0">
+            <h5 class="mb-3">{{ 'PRODUCTS.AVAILABLE_SIZES' | translate }}</h5>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>{{ 'PRODUCTS.SIZE' | translate }}</th>
+                    <th>{{ 'PRODUCTS.PRICE_BEFORE_DISCOUNT' | translate }}</th>
+                    <th>{{ 'PRODUCTS.DISCOUNT' | translate }}</th>
+                    <th>{{ 'PRODUCTS.FINAL_PRICE' | translate }}</th>
+                    <th>{{ 'PRODUCTS.STOCK' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let size of productDetails.sizes">
+                    <td class="fw-semibold">{{ size.size }}</td>
+                    <td>{{ size.price_before_discount | currency : "EGP " }}</td>
+                    <td>
+                      <span class="text-danger" *ngIf="size.discount > 0">
+                        -{{ size.discount | currency : "EGP " }}
+                      </span>
+                      <span class="text-muted" *ngIf="!size.discount || size.discount === 0">
+                        {{ 'PRODUCTS.NO_DISCOUNT' | translate }}
+                      </span>
+                    </td>
+                    <td class="text-success fw-bold">{{ size.price_after_discount | currency : "EGP " }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="size.stock > 0 ? 'bg-success' : 'bg-danger'">
+                        {{ size.stock }} {{ 'PRODUCTS.ITEMS' | translate }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="alert alert-warning" *ngIf="!productDetails.sizes || productDetails.sizes.length === 0">
+            {{ 'PRODUCTS.NO_SIZES_AVAILABLE' | translate }}
           </div>
 
           <hr />
@@ -154,7 +197,7 @@
             <p
               class="text-muted"
               [innerHTML]="
-                productDetails.description.ar || productDetails.description.en || ('PRODUCTS.NO_DESCRIPTION_AVAILABLE' | translate)
+                productDetails.description?.ar || productDetails.description?.en || ('PRODUCTS.NO_DESCRIPTION_AVAILABLE' | translate)
               "
             ></p>
           </div>
@@ -169,7 +212,7 @@
                 <div>
                   <span class="text-muted small d-block">{{ 'PRODUCTS.PRODUCT_CATEGORY' | translate }}</span>
                   <span class="fw-semibold">{{
-                    productDetails.category?.name.ar || productDetails.category?.name.en || ('PRODUCTS.UNCATEGORIZED' | translate)
+                    productDetails.category?.name?.ar || productDetails.category?.name?.en || ('PRODUCTS.UNCATEGORIZED' | translate)
                   }}</span>
                 </div>
               </div>

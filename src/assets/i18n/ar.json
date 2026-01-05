@@ -75,6 +75,12 @@
     "MARK_ALL_READ": "تحديد الكل كمقروء"
   },
   "PRODUCTS": {
+    "SIZE_REQUIRED ": "الحجم مطلوب",
+    "MANAGE_SIZES": "إدارة المقاسات",
+    "STOCK": "المخزون",
+    "ITEMS": "الكمية",
+    "ADD_SIZE": "إضافة مقاس",
+    "NO_SIZES_ADDED": "لم يتم إضافة أي مقاسات",
     "TITLE": "المنتجات",
     "ADD_PRODUCT": "إضافة منتج",
     "EDIT_PRODUCT": "تعديل المنتج",
@@ -548,6 +554,7 @@
     "SESSION_EXPIRED": "انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى."
   },
   "TABLES": {
+    "ACTION": "الحدث",
     "INDEX": "الرقم",
     "ID": "المعرف",
     "NAME": "الاسم",

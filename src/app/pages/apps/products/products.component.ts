@@ -38,10 +38,17 @@ export class ProductsComponent {
     id: null,
     title: { en: '', ar: '' },
     description: { en: '', ar: '' },
+    category_id: '',
+    sizes: []
+  };
+
+  // Form for managing sizes
+  sizeForm: any = {
+    size: '',
     price_before_discount: 0,
     discount: 0,
     price_after_discount: 0,
-    category_id: ''
+    stock: 0
   };
 
   // Available languages to add (expandable)
@@ -161,13 +168,49 @@ export class ProductsComponent {
   }
 
   get finalPrice(): number {
-    const before = Number(this.form.price_before_discount) || 0;
-    const disc = Number(this.form.discount) || 0;
+    const before = Number(this.sizeForm.price_before_discount) || 0;
+    const disc = Number(this.sizeForm.discount) || 0;
     return before - disc;
   }
 
   calculateFinalPrice() {
-    this.form.price_after_discount = this.finalPrice;
+    this.sizeForm.price_after_discount = this.finalPrice;
+  }
+
+  addSize() {
+    if (!this.sizeForm.size) {
+      this.errorMessage = this.translate.instant('PRODUCTS.SIZE_REQUIRED');
+      return;
+    }
+    if (this.sizeForm.price_before_discount <= 0) {
+      this.errorMessage = this.translate.instant('PRODUCTS.PRICE_REQUIRED');
+      return;
+    }
+
+    const newSize = {
+      size: this.sizeForm.size,
+      price_before_discount: this.sizeForm.price_before_discount,
+      discount: this.sizeForm.discount || 0,
+      price_after_discount: this.finalPrice,
+      stock: this.sizeForm.stock || 0
+    };
+
+    this.form.sizes.push(newSize);
+    this.resetSizeForm();
+  }
+
+  removeSize(index: number) {
+    this.form.sizes.splice(index, 1);
+  }
+
+  resetSizeForm() {
+    this.sizeForm = {
+      size: '',
+      price_before_discount: 0,
+      discount: 0,
+      price_after_discount: 0,
+      stock: 0
+    };
   }
 
   saveProduct() {
@@ -186,6 +229,10 @@ export class ProductsComponent {
       this.errorMessage = this.translate.instant('PRODUCTS.MAIN_IMAGE_REQUIRED');
       return;
     }
+    if (!this.form.sizes || this.form.sizes.length === 0) {
+      this.errorMessage = this.translate.instant('PRODUCTS.AT_LEAST_ONE_SIZE_REQUIRED');
+      return;
+    }
 
     const fd = new FormData();
 
@@ -196,11 +243,16 @@ export class ProductsComponent {
       fd.append(`description[${code}]`, this.form.description?.[code] || '');
     }
 
-    // Prices
-    fd.append('price_before_discount', this.form.price_before_discount.toString());
-    fd.append('discount', this.form.discount.toString());
-    fd.append('price_after_discount', this.finalPrice.toString());
     fd.append('category_id', this.form.category_id);
+
+    // Sizes
+    this.form.sizes.forEach((size: any, index: number) => {
+      fd.append(`sizes[${index}][size]`, size.size);
+      fd.append(`sizes[${index}][price_before_discount]`, size.price_before_discount);
+      fd.append(`sizes[${index}][discount]`, size.discount || 0);
+      fd.append(`sizes[${index}][price_after_discount]`, size.price_after_discount);
+      fd.append(`sizes[${index}][stock]`, size.stock || 0);
+    });
 
     // Images
     if (this.mainImage) fd.append('image', this.mainImage);
@@ -219,7 +271,6 @@ export class ProductsComponent {
           console.error('Update error', err);
           if (err.status === 401) {
             this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
-            // setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
             this.errorMessage = err.error?.message || this.translate.instant('PRODUCTS.UPDATE_FAILED');
           }
@@ -233,7 +284,6 @@ export class ProductsComponent {
           console.error('Create error', err);
           if (err.status === 401) {
             this.errorMessage = this.translate.instant('PRODUCTS.SESSION_EXPIRED');
-            // setTimeout(() => window.location.href = '/auth/login', 2000);
           } else {
             this.errorMessage = err.error?.message || this.translate.instant('PRODUCTS.CREATE_FAILED');
           }
@@ -273,7 +323,6 @@ export class ProductsComponent {
         if (typeof fullProduct.title === 'object' && fullProduct.title !== null) {
           titleObj = { ...fullProduct.title };
         } else if (typeof fullProduct.title === 'string') {
-          // If backend returns string, use it for all languages
           titleObj = { en: fullProduct.title, ar: fullProduct.title };
         }
         
@@ -287,10 +336,8 @@ export class ProductsComponent {
           id: fullProduct.id,
           title: titleObj,
           description: descObj,
-          price_before_discount: fullProduct.price_before_discount,
-          discount: fullProduct.discount || 0,
-          price_after_discount: fullProduct.price_after_discount,
-          category_id: fullProduct.category_id || fullProduct.category?.id
+          category_id: fullProduct.category_id || fullProduct.category?.id,
+          sizes: fullProduct.sizes || []
         };
         
         // Set selected languages from product title keys
@@ -301,7 +348,6 @@ export class ProductsComponent {
             return found ? found : { code: c, label: c.toUpperCase() };
           });
         } else {
-          // Default languages if no translations found
           this.selectedLangs = [
             { code: 'en', label: 'English' },
             { code: 'ar', label: 'العربية' }
@@ -325,6 +371,7 @@ export class ProductsComponent {
         this.currentProductImage = fullProduct.image || '';
         this.currentProductFiles = fullProduct.files || [];
         this.activeTabIndex = 0;
+        this.resetSizeForm();
         this.productModal.show();
       },
       error: (err) => {
@@ -370,10 +417,8 @@ export class ProductsComponent {
       id: null,
       title: { en: '', ar: '' },
       description: { en: '', ar: '' },
-      price_before_discount: 0,
-      discount: 0,
-      price_after_discount: 0,
-      category_id: ''
+      category_id: '',
+      sizes: []
     };
     this.mainImage = null;
     this.additionalImages = [];
@@ -384,6 +429,7 @@ export class ProductsComponent {
     this.isEditMode = false;
     this.activeTabIndex = 0;
     this.isUploading = false;
+    this.resetSizeForm();
     // reset to default languages
     this.selectedLangs = [
       { code: 'en', label: 'English' },

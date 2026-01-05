@@ -29,6 +29,7 @@
           <th>{{ 'TABLES.IMAGE' | translate }}</th>
           <th>{{ 'TABLES.TITLE' | translate }}</th>
           <th>{{ 'TABLES.CATEGORY' | translate }}</th>
+          <th>{{ 'PRODUCTS.SIZES' | translate }}</th>
           <th>{{ 'PRODUCTS.ORIGINAL_PRICE' | translate }}</th>
           <th>{{ 'PRODUCTS.DISCOUNT' | translate }}</th>
           <th>{{ 'PRODUCTS.DISCOUNT_PRICE' | translate }}</th>
@@ -49,19 +50,35 @@
           </td>
           <td>
             <a [routerLink]="['/apps/products', p.id]" class="fw-medium">
-              {{ p.title.ar || ('PRODUCTS.NO_TITLE' | translate) }}
+              {{ p.title?.ar || ('PRODUCTS.NO_TITLE' | translate) }}
             </a>
             <div class="small text-muted" *ngIf="p.slug">{{ p.slug }}</div>
           </td>
+          <td>{{ p.category?.name?.ar || ('PRODUCTS.UNCATEGORIZED' | translate) }}</td>
           <td>
-            <span class="badge bg-secondary">{{ p.category?.name.ar || ('PRODUCTS.UNCATEGORIZED' | translate) }}</span>
+            <span class="badge bg-info" *ngIf="p.sizes && p.sizes.length > 0">
+              {{ p.sizes.length }} {{ 'PRODUCTS.SIZES' | translate }}
+            </span>
+            <span class="text-muted" *ngIf="!p.sizes || p.sizes.length === 0">{{ 'PRODUCTS.NO_SIZES' | translate }}</span>
           </td>
-          <td>{{ p.price_before_discount | currency:'EGP ' }}</td>
           <td>
-            <span class="badge bg-warning" *ngIf="p.discount > 0">-{{ p.discount | currency:'EGP ' }}</span>
-            <span class="text-muted" *ngIf="!p.discount || p.discount === 0">{{ 'PRODUCTS.NO_DISCOUNT' | translate }}</span>
+            <span *ngIf="p.sizes && p.sizes.length > 0">
+              {{ p.sizes[0].price_before_discount | currency:'EGP ' }}
+            </span>
           </td>
-          <td class="text-success fw-bold">{{ p.price_after_discount | currency:'EGP ' }}</td>
+          <td>
+            <span class="badge bg-warning" *ngIf="p.sizes && p.sizes[0]?.discount > 0">
+              -{{ p.sizes[0].discount | currency:'EGP ' }}
+            </span>
+            <span class="text-muted" *ngIf="!p.sizes || !p.sizes[0]?.discount || p.sizes[0].discount === 0">
+              {{ 'PRODUCTS.NO_DISCOUNT' | translate }}
+            </span>
+          </td>
+          <td class="text-success fw-bold">
+            <span *ngIf="p.sizes && p.sizes.length > 0">
+              {{ p.sizes[0].price_after_discount | currency:'EGP ' }}
+            </span>
+          </td>
           <td>
             <i class="ri-eye-line me-1 px-1"></i>{{ p.views?.length || 0 }}
           </td>
@@ -161,23 +178,71 @@
                 </option>
               </select>
             </div>
-
-            <div class="col-md-3">
-              <label class="form-label">{{ 'PRODUCTS.ORIGINAL_PRICE' | translate }} <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" [(ngModel)]="form.price_before_discount" 
-                     (ngModelChange)="calculateFinalPrice()" name="price_before" required>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">{{ 'PRODUCTS.DISCOUNT' | translate }}</label>
-              <input type="number" class="form-control" [(ngModel)]="form.discount" 
-                     (ngModelChange)="calculateFinalPrice()" name="discount">
-            </div>
           </div>
 
-          <div class="row mt-3">
-            <div class="col-md-6">
-              <label class="form-label">{{ 'PRODUCTS.DISCOUNT_PRICE' | translate }}</label>
-              <input type="text" class="form-control bg-light" [value]="finalPrice | currency:'EGP '" readonly>
+          <hr class="my-4">
+
+          <!-- Sizes Management -->
+          <div class="mb-4">
+            <h6 class="mb-3">{{ 'PRODUCTS.MANAGE_SIZES' | translate }} <span class="text-danger">*</span></h6>
+            
+            <div class="row g-3 mb-3 p-3 bg-light rounded">
+              <div class="col-md-3">
+                <label class="form-label">{{ 'PRODUCTS.SIZE' | translate }}</label>
+                <input type="text" class="form-control" [(ngModel)]="sizeForm.size" name="size" placeholder="S, M, L, XL...">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">{{ 'PRODUCTS.ORIGINAL_PRICE' | translate }}</label>
+                <input type="number" class="form-control" [(ngModel)]="sizeForm.price_before_discount" 
+                       (ngModelChange)="calculateFinalPrice()" name="size_price" step="0.01">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">{{ 'PRODUCTS.DISCOUNT' | translate }}</label>
+                <input type="number" class="form-control" [(ngModel)]="sizeForm.discount" 
+                       (ngModelChange)="calculateFinalPrice()" name="size_discount" step="0.01">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">{{ 'PRODUCTS.STOCK' | translate }}</label>
+                <input type="number" class="form-control" [(ngModel)]="sizeForm.stock" name="size_stock" min="0">
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" (click)="addSize()">
+                  <i class="ri-add-line me-1"></i>{{ 'PRODUCTS.ADD_SIZE' | translate }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Sizes List -->
+            <div class="table-responsive" *ngIf="form.sizes && form.sizes.length > 0">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>{{ 'PRODUCTS.SIZE' | translate }}</th>
+                    <th>{{ 'PRODUCTS.ORIGINAL_PRICE' | translate }}</th>
+                    <th>{{ 'PRODUCTS.DISCOUNT' | translate }}</th>
+                    <th>{{ 'PRODUCTS.FINAL_PRICE' | translate }}</th>
+                    <th>{{ 'PRODUCTS.STOCK' | translate }}</th>
+                    <th>{{ 'TABLES.ACTION' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let size of form.sizes; let i = index">
+                    <td>{{ size.size }}</td>
+                    <td>{{ size.price_before_discount | currency:'EGP ' }}</td>
+                    <td>{{ size.discount | currency:'EGP ' }}</td>
+                    <td class="text-success fw-bold">{{ size.price_after_discount | currency:'EGP ' }}</td>
+                    <td>{{ size.stock }}</td>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-danger" (click)="removeSize(i)">
+                        <i class="ri-delete-bin-5-fill"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="alert alert-warning" *ngIf="!form.sizes || form.sizes.length === 0">
+              {{ 'PRODUCTS.NO_SIZES_ADDED' | translate }}
             </div>
           </div>
 
